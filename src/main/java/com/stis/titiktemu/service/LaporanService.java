@@ -11,7 +11,7 @@ import com.stis.titiktemu.model.User;
 import com.stis.titiktemu.repository.LaporanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // <-- PERBAIKAN: Import ditambahkan
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -30,6 +30,8 @@ public class LaporanService {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     // Create laporan
+    // Menambahkan @Transactional adalah best practice untuk operasi tulis (create)
+    @Transactional
     public LaporanResponse createLaporan(LaporanRequest request) {
         User currentUser = userService.getCurrentUser();
 
@@ -48,8 +50,8 @@ public class LaporanService {
         return mapToLaporanResponse(laporan);
     }
 
-    // Get all laporan with optional filters
-    @Transactional(readOnly = true) // <-- PERBAIKAN: Anotasi ini menjaga sesi DB tetap terbuka
+    // Get all laporan (method read-only)
+    @Transactional(readOnly = true) // <-- FIX UNTUK GET ALL
     public List<LaporanResponse> getAllLaporan(String tipe, String kategori, String status, String lokasi, String search) {
         TipeLaporan tipeLaporan = (tipe != null && !tipe.isEmpty()) ? TipeLaporan.valueOf(tipe.toUpperCase()) : null;
         KategoriBarang kategoriBarang = (kategori != null && !kategori.isEmpty()) ? KategoriBarang.valueOf(kategori.toUpperCase()) : null;
@@ -64,14 +66,13 @@ public class LaporanService {
             laporanList = laporanRepository.findAllByOrderByCreatedAtDesc();
         }
 
-        // Karena @Transactional, sesi masih terbuka saat mapping ini berjalan
         return laporanList.stream()
                 .map(this::mapToLaporanResponse)
                 .collect(Collectors.toList());
     }
 
-    // Get laporan by ID
-    @Transactional(readOnly = true) // <-- PERBAIKAN: Best practice untuk method read-only
+    // Get laporan by ID (method read-only)
+    @Transactional(readOnly = true) // <-- FIX UNTUK GET BY ID
     public LaporanResponse getLaporanById(Long id) {
         Laporan laporan = laporanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Laporan tidak ditemukan"));
@@ -79,13 +80,16 @@ public class LaporanService {
         return mapToLaporanResponse(laporan);
     }
 
-    // Update laporan (only owner can update)
+    // Update laporan (method tulis/write)
+    @Transactional // <-- FIX UNTUK UPDATE (PUT). (Perhatikan: *bukan* readOnly=true)
     public LaporanResponse updateLaporan(Long id, UpdateLaporanRequest request) {
         User currentUser = userService.getCurrentUser();
+
+        // Sesi akan tetap terbuka selama method ini berjalan
         Laporan laporan = laporanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Laporan tidak ditemukan"));
 
-        // Check if current user is the owner
+        // Verifikasi kepemilikan (sekarang aman karena sesi masih terbuka)
         if (!laporan.getUser().getId().equals(currentUser.getId())) {
             throw new RuntimeException("Anda tidak memiliki akses untuk mengupdate laporan ini");
         }
@@ -115,13 +119,16 @@ public class LaporanService {
         return mapToLaporanResponse(laporan);
     }
 
-    // Delete laporan (only owner can delete)
+    // Delete laporan (method tulis/write)
+    @Transactional // <-- FIX UNTUK DELETE (juga memiliki verifikasi kepemilikan)
     public void deleteLaporan(Long id) {
         User currentUser = userService.getCurrentUser();
+
+        // Sesi akan tetap terbuka selama method ini berjalan
         Laporan laporan = laporanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Laporan tidak ditemukan"));
 
-        // Check if current user is the owner
+        // Verifikasi kepemilikan (sekarang aman karena sesi masih terbuka)
         if (!laporan.getUser().getId().equals(currentUser.getId())) {
             throw new RuntimeException("Anda tidak memiliki akses untuk menghapus laporan ini");
         }
@@ -130,6 +137,7 @@ public class LaporanService {
     }
 
     // Helper method to map Laporan to LaporanResponse
+    // (Tidak perlu @Transactional karena dipanggil oleh method yang sudah @Transactional)
     private LaporanResponse mapToLaporanResponse(Laporan laporan) {
         LaporanResponse response = new LaporanResponse();
         response.setId(laporan.getId());
@@ -142,7 +150,7 @@ public class LaporanService {
         response.setStatus(laporan.getStatus().name());
         response.setFotoUrl(laporan.getFotoUrl());
 
-        // Set pelapor info 
+        // Set pelapor info
         response.setPelaporNama(laporan.getUser().getNamaLengkap());
         response.setPelaporJabatan(laporan.getUser().getJabatan());
         response.setPelaporNoHp(laporan.getUser().getNoHp());

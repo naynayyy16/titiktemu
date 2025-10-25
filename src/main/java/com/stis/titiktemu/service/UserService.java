@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -20,21 +21,24 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     // Get current logged in user
+    // Method ini tidak perlu @Transactional karena hanya mengambil data
     public User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
     }
 
-    // Get profile
+    // Get profile (Read-only operation)
+    @Transactional(readOnly = true)
     public UserResponse getProfile() {
         User user = getCurrentUser();
         return mapToUserResponse(user);
     }
 
-    // Update profile
+    // Update profile (Write operation)
+    @Transactional
     public UserResponse updateProfile(UpdateProfileRequest request) {
-        User user = getCurrentUser();
+        User user = getCurrentUser(); // Sesi tetap terbuka karena @Transactional
 
         // Check if email is being changed and already exists
         if (!user.getEmail().equals(request.getEmail())) {
@@ -54,9 +58,10 @@ public class UserService {
         return mapToUserResponse(user);
     }
 
-    // Change password
+    // Change password (Write operation)
+    @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        User user = getCurrentUser();
+        User user = getCurrentUser(); // Sesi tetap terbuka
 
         // Verify old password
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
@@ -68,9 +73,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // Delete account
+    // Delete account (Write operation)
+    @Transactional
     public void deleteAccount() {
-        User user = getCurrentUser();
+        User user = getCurrentUser(); // Sesi tetap terbuka
         userRepository.delete(user);
     }
 
