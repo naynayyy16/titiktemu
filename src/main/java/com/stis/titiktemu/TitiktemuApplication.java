@@ -10,7 +10,7 @@ public class TitiktemuApplication {
 		SpringApplication.run(TitiktemuApplication.class, args);
 		System.out.println("\n==============================================");
 		System.out.println("🚀 Titik Temu API berhasil dijalankan!");
-		System.out.println("📖 Swagger UI: http://localhost:8080/swagger-ui.html");
+		System.out.println("📖 Swagger UI: http://localhost:8080/docs/open-api");
 		System.out.println("📋 API Docs: http://localhost:8080/api-docs");
 		System.out.println("==============================================\n");
 	}
