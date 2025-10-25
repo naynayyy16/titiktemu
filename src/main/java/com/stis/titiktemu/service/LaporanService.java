@@ -11,6 +11,7 @@ import com.stis.titiktemu.model.User;
 import com.stis.titiktemu.repository.LaporanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- PERBAIKAN: Import ditambahkan
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,6 +49,7 @@ public class LaporanService {
     }
 
     // Get all laporan with optional filters
+    @Transactional(readOnly = true) // <-- PERBAIKAN: Anotasi ini menjaga sesi DB tetap terbuka
     public List<LaporanResponse> getAllLaporan(String tipe, String kategori, String status, String lokasi, String search) {
         TipeLaporan tipeLaporan = (tipe != null && !tipe.isEmpty()) ? TipeLaporan.valueOf(tipe.toUpperCase()) : null;
         KategoriBarang kategoriBarang = (kategori != null && !kategori.isEmpty()) ? KategoriBarang.valueOf(kategori.toUpperCase()) : null;
@@ -62,12 +64,14 @@ public class LaporanService {
             laporanList = laporanRepository.findAllByOrderByCreatedAtDesc();
         }
 
+        // Karena @Transactional, sesi masih terbuka saat mapping ini berjalan
         return laporanList.stream()
                 .map(this::mapToLaporanResponse)
                 .collect(Collectors.toList());
     }
 
     // Get laporan by ID
+    @Transactional(readOnly = true) // <-- PERBAIKAN: Best practice untuk method read-only
     public LaporanResponse getLaporanById(Long id) {
         Laporan laporan = laporanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Laporan tidak ditemukan"));
@@ -138,7 +142,7 @@ public class LaporanService {
         response.setStatus(laporan.getStatus().name());
         response.setFotoUrl(laporan.getFotoUrl());
 
-        // Set pelapor info
+        // Set pelapor info 
         response.setPelaporNama(laporan.getUser().getNamaLengkap());
         response.setPelaporJabatan(laporan.getUser().getJabatan());
         response.setPelaporNoHp(laporan.getUser().getNoHp());
