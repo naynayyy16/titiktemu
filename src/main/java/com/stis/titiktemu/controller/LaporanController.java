@@ -6,6 +6,7 @@ import com.stis.titiktemu.dto.MessageResponse;
 import com.stis.titiktemu.dto.UpdateLaporanRequest;
 import com.stis.titiktemu.service.LaporanService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,14 +24,42 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/laporan")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Laporan Lost & Found", description = "Endpoint untuk manajemen laporan barang hilang dan ditemukan")
+@Tag(name = "Laporan Lost & Found", description = "Endpoint untuk manajemen laporan barang hilang dan ditemukan (memerlukan authentication)")
 public class LaporanController {
 
     @Autowired
     private LaporanService laporanService;
 
     @PostMapping
-    @Operation(summary = "Buat laporan baru")
+    @Operation(
+            summary = "Buat laporan baru",
+            description = "Membuat laporan barang hilang atau ditemukan. Tipe laporan: HILANG atau TEMUKAN. " +
+                    "Kategori: ELEKTRONIK, ALAT_TULIS, AKSESORIS_PRIBADI, ALAT_MAKAN, DOKUMEN, ATRIBUT_KAMPUS, LAINNYA. " +
+                    "Format tanggal: YYYY-MM-DD (contoh: 2025-10-25)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Laporan berhasil dibuat",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LaporanResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validasi gagal atau tipe/kategori tidak valid",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MessageResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content
+            )
+    })
     public ResponseEntity<?> createLaporan(@Valid @RequestBody LaporanRequest request) {
         try {
             LaporanResponse response = laporanService.createLaporan(request);
@@ -43,22 +72,39 @@ public class LaporanController {
     @GetMapping
     @Operation(
             summary = "List semua laporan dengan filter",
-            description = "Filter: tipe (HILANG/TEMUKAN), kategori, status (AKTIF/SELESAI), lokasi, search (cari di judul/deskripsi)"
+            description = "Menampilkan daftar laporan dengan berbagai filter optional: " +
+                    "tipe (HILANG/TEMUKAN), kategori, status (AKTIF/SELESAI), lokasi, dan search keyword. " +
+                    "Filter dapat dikombinasikan. Jika tidak ada filter, menampilkan semua laporan diurutkan dari terbaru."
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Daftar laporan berhasil diambil (dapat berupa array kosong jika tidak ada data)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LaporanResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content
+            )
+    })
     public ResponseEntity<List<LaporanResponse>> getAllLaporan(
-            @Parameter(description = "Filter berdasarkan tipe: HILANG atau TEMUKAN")
+            @Parameter(description = "Filter berdasarkan tipe: HILANG atau TEMUKAN", example = "HILANG")
             @RequestParam(required = false) String tipe,
 
-            @Parameter(description = "Filter berdasarkan kategori: ELEKTRONIK, ALAT_TULIS, AKSESORIS_PRIBADI, ALAT_MAKAN, DOKUMEN, ATRIBUT_KAMPUS, LAINNYA")
+            @Parameter(description = "Filter berdasarkan kategori: ELEKTRONIK, ALAT_TULIS, AKSESORIS_PRIBADI, ALAT_MAKAN, DOKUMEN, ATRIBUT_KAMPUS, LAINNYA", example = "ELEKTRONIK")
             @RequestParam(required = false) String kategori,
 
-            @Parameter(description = "Filter berdasarkan status: AKTIF atau SELESAI")
+            @Parameter(description = "Filter berdasarkan status: AKTIF atau SELESAI", example = "AKTIF")
             @RequestParam(required = false) String status,
 
-            @Parameter(description = "Filter berdasarkan lokasi (partial match)")
+            @Parameter(description = "Filter berdasarkan lokasi (partial match, case insensitive)", example = "kantin")
             @RequestParam(required = false) String lokasi,
 
-            @Parameter(description = "Cari berdasarkan kata kunci di judul atau deskripsi")
+            @Parameter(description = "Cari berdasarkan kata kunci di judul atau deskripsi (case insensitive)", example = "iphone")
             @RequestParam(required = false) String search
     ) {
         List<LaporanResponse> response = laporanService.getAllLaporan(tipe, kategori, status, lokasi, search);
@@ -66,8 +112,37 @@ public class LaporanController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Detail laporan berdasarkan ID")
-    public ResponseEntity<?> getLaporanById(@PathVariable Long id) {
+    @Operation(
+            summary = "Detail laporan berdasarkan ID",
+            description = "Menampilkan detail lengkap laporan termasuk informasi kontak pelapor"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Detail laporan berhasil diambil",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LaporanResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Laporan tidak ditemukan",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MessageResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content
+            )
+    })
+    public ResponseEntity<?> getLaporanById(
+            @Parameter(description = "ID laporan yang ingin diambil", example = "1")
+            @PathVariable Long id
+    ) {
         try {
             LaporanResponse response = laporanService.getLaporanById(id);
             return ResponseEntity.ok(response);
@@ -78,8 +153,41 @@ public class LaporanController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update laporan (hanya pemilik laporan)")
+    @Operation(
+            summary = "Update laporan (hanya pemilik laporan)",
+            description = "Mengubah informasi laporan. Hanya user yang membuat laporan tersebut yang bisa mengupdate. " +
+                    "Semua field bersifat optional, hanya field yang diisi yang akan diupdate."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Laporan berhasil diupdate",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = LaporanResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Validasi gagal atau user bukan pemilik laporan",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MessageResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Laporan tidak ditemukan",
+                    content = @Content
+            )
+    })
     public ResponseEntity<?> updateLaporan(
+            @Parameter(description = "ID laporan yang ingin diupdate", example = "1")
             @PathVariable Long id,
             @Valid @RequestBody UpdateLaporanRequest request
     ) {
@@ -92,8 +200,42 @@ public class LaporanController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Hapus laporan (hanya pemilik laporan)")
-    public ResponseEntity<?> deleteLaporan(@PathVariable Long id) {
+    @Operation(
+            summary = "Hapus laporan (hanya pemilik laporan)",
+            description = "Menghapus laporan. Hanya user yang membuat laporan tersebut yang bisa menghapus."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Laporan berhasil dihapus",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MessageResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User bukan pemilik laporan",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = MessageResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token tidak valid",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Laporan tidak ditemukan",
+                    content = @Content
+            )
+    })
+    public ResponseEntity<?> deleteLaporan(
+            @Parameter(description = "ID laporan yang ingin dihapus", example = "1")
+            @PathVariable Long id
+    ) {
         try {
             laporanService.deleteLaporan(id);
             return ResponseEntity.ok(new MessageResponse("Laporan berhasil dihapus"));
