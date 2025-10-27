@@ -417,8 +417,8 @@ User bisa langsung menghubungi pelapor untuk koordinasi pengambilan barang.
 ## 👨‍💻 Author
 
 **Safira Inayah**  
-Ujian Tengah Semester
-Mata Kuliah: Pemrograman Platform Khusus  
+Ujian Tengah Semester  
+Pemrograman Platform Khusus  
 
 ---
 
