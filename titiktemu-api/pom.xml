@@ -13,7 +13,7 @@
 	</parent>
 
 	<groupId>com.stis</groupId>
-	<artifactId>titiktemu</artifactId>
+	<artifactId>titiktemu-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>titiktemu</name>
 	<description>Demo project for Spring Boot</description>
