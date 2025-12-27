@@ -1,5 +1,6 @@
 package com.stis.titiktemu.ui.screens.create
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -61,9 +64,19 @@ fun CreateLaporanScreen(
         "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
     )
 
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
     LaunchedEffect(createState) {
-        if (createState is Resource.Success) {
-            onSuccess()
+        when (createState) {
+            is Resource.Success -> {
+                onSuccess()
+            }
+            is Resource.Error -> {
+                errorMessage = (createState as Resource.Error).message ?: "Terjadi kesalahan"
+                showErrorDialog = true
+            }
+            else -> {}
         }
     }
 
@@ -116,12 +129,20 @@ fun CreateLaporanScreen(
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                readOnly = true
+                    .padding(bottom = 12.dp)
+                    .clickable { kategoriExpanded = true },
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = if (kategoriExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null
+                    )
+                }
             )
             DropdownMenu(
                 expanded = kategoriExpanded,
-                onDismissRequest = { kategoriExpanded = false }
+                onDismissRequest = { kategoriExpanded = false },
+                modifier = Modifier.fillMaxWidth(0.85f)
             ) {
                 kategoriOptions.forEach { option ->
                     DropdownMenuItem(
@@ -171,6 +192,38 @@ fun CreateLaporanScreen(
                 },
                 isLoading = createState is Resource.Loading
             )
+
+            if (showErrorDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showErrorDialog = false },
+                    title = { Text("Error") },
+                    text = { Text(errorMessage) },
+                    confirmButton = {
+                        androidx.compose.material3.Button(
+                            onClick = { showErrorDialog = false }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+
+            if (createState is Resource.Loading) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = {},
+                    text = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Mengirim laporan...")
+                        }
+                    },
+                    confirmButton = {}
+                )
+            }
         }
     }
 }

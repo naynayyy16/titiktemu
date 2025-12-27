@@ -1,6 +1,7 @@
 package com.stis.titiktemu.ui.screens.splash
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stis.titiktemu.data.local.PreferencesManager
@@ -15,12 +16,31 @@ class SplashViewModel(context: Context) : ViewModel() {
         onNavigateToLogin: () -> Unit
     ) {
         viewModelScope.launch {
-            delay(2000) // Splash duration
-            val token = preferencesManager.getToken()
-            if (!token.isNullOrEmpty() && token != "null") {
-                onNavigateToHome()
-            } else {
+            try {
+                delay(2000) // Splash duration
+                val token = preferencesManager.getToken()
+                if (!token.isNullOrEmpty() && token != "null") {
+                    onNavigateToHome()
+                } else {
+                    onNavigateToLogin()
+                }
+            } catch (e: Exception) {
+                Log.e("SplashViewModel", "Error checking token", e)
+                // Default to login on error
                 onNavigateToLogin()
+            }
+        }
+    }
+
+    fun navigateToHome(onNavigateToHome: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                delay(2000) // Splash duration
+                Log.d("SplashViewModel", "Navigating to Home without login check")
+                onNavigateToHome()
+            } catch (e: Exception) {
+                Log.e("SplashViewModel", "Error navigating to home", e)
+                onNavigateToHome()
             }
         }
     }

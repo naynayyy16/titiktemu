@@ -26,10 +26,27 @@ fun SplashScreen(
     onNavigateToLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = SplashViewModel(context)
+    val viewModel = try {
+        SplashViewModel(context)
+    } catch (e: Exception) {
+        // Fallback if ViewModel initialization fails
+        null
+    }
 
     LaunchedEffect(Unit) {
-        viewModel.checkTokenAndNavigate(onNavigateToHome, onNavigateToLogin)
+        try {
+            if (viewModel != null) {
+                // Just show splash for 2 seconds, then go to Home
+                // Users can login anytime from Home screen
+                viewModel.navigateToHome(onNavigateToHome)
+            } else {
+                // Fallback navigation
+                onNavigateToHome()
+            }
+        } catch (e: Exception) {
+            // Last resort - navigate to home
+            onNavigateToHome()
+        }
     }
 
     Box(

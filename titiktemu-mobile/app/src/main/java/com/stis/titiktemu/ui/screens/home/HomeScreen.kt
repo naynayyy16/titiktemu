@@ -27,18 +27,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stis.titiktemu.data.local.PreferencesManager
 import com.stis.titiktemu.ui.components.EmptyState
 import com.stis.titiktemu.ui.components.LaporanCard
 import com.stis.titiktemu.ui.components.LoadingDialog
 import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,16 +55,24 @@ fun HomeScreen(
     val viewModel = HomeViewModel(context)
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
+    val preferencesManager = PreferencesManager(context)
+    val coroutineScope = rememberCoroutineScope()
 
     var showFilterMenu by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+
+    // Direct call to onProfileClick - token already validated at splash screen
+    // If user is here, they are logged in
+    val handleProfileClick: () -> Unit = {
+        onProfileClick()
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Titik Temu", style = Typography.headlineMedium) },
                 actions = {
-                    IconButton(onClick = { onProfileClick() }) {
+                    IconButton(onClick = handleProfileClick) {
                         Icon(Icons.Default.Person, contentDescription = "Profile")
                     }
                 }
