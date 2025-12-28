@@ -36,11 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.KategoriChip
 import com.stis.titiktemu.ui.components.LoadingDialog
 import com.stis.titiktemu.ui.components.StatusBadge
-import com.stis.titiktemu.ui.theme.Primary
-import com.stis.titiktemu.ui.theme.TextSecondary
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
 
@@ -53,7 +53,7 @@ fun DetailLaporanScreen(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = DetailViewModel(context)
+    val viewModel: DetailViewModel = viewModel(factory = ViewModelFactory(context))
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
 

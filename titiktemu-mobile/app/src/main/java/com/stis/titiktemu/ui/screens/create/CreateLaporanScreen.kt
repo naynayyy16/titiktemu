@@ -1,5 +1,7 @@
 package com.stis.titiktemu.ui.screens.create
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,13 +38,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
 import com.stis.titiktemu.ui.components.CustomTextField
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.screens.create.CreateViewModel
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
 import java.time.LocalDate
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateLaporanScreen(
@@ -50,9 +55,8 @@ fun CreateLaporanScreen(
     onSuccess: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = CreateViewModel(context)
+    val viewModel: CreateViewModel = viewModel(factory = ViewModelFactory(context))
     val createState by viewModel.createState.collectAsStateWithLifecycle()
-
     var tipe by remember { mutableStateOf("HILANG") }
     var kategori by remember { mutableStateOf("ELEKTRONIK") }
     var judul by remember { mutableStateOf("") }

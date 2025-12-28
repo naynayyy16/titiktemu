@@ -25,8 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
 import com.stis.titiktemu.ui.components.CustomTextField
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
 
@@ -34,7 +36,7 @@ import com.stis.titiktemu.util.Resource
 @Composable
 fun EditProfileScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val viewModel = ProfileViewModel(context)
+    val viewModel: ProfileViewModel = viewModel(factory = ViewModelFactory(context))
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
 
@@ -134,7 +136,7 @@ fun EditProfileScreen(onBack: () -> Unit) {
 @Composable
 fun ChangePasswordScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val viewModel = ProfileViewModel(context)
+    val viewModel: ProfileViewModel = viewModel(factory = ViewModelFactory(context))
     val passwordState by viewModel.passwordState.collectAsStateWithLifecycle()
 
     var oldPassword by remember { mutableStateOf("") }

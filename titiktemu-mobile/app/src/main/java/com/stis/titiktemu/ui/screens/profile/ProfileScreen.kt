@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,7 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.LoadingDialog
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.TextSecondary
 import com.stis.titiktemu.ui.theme.Typography
@@ -54,7 +54,7 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = ProfileViewModel(context)
+    val viewModel: ProfileViewModel = viewModel(factory = ViewModelFactory(context))
     val profileState by viewModel.profileState.collectAsStateWithLifecycle()
 
     var showLogoutDialog by remember { mutableStateOf(false) }

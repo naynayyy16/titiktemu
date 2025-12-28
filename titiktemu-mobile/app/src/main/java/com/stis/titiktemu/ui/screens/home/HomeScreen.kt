@@ -4,18 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -25,23 +21,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.stis.titiktemu.data.local.PreferencesManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.EmptyState
 import com.stis.titiktemu.ui.components.LaporanCard
 import com.stis.titiktemu.ui.components.LoadingDialog
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,27 +44,16 @@ fun HomeScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = HomeViewModel(context)
+    val viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(context))
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
-    val preferencesManager = PreferencesManager(context)
-    val coroutineScope = rememberCoroutineScope()
-
-    var showFilterMenu by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Direct call to onProfileClick - token already validated at splash screen
-    // If user is here, they are logged in
-    val handleProfileClick: () -> Unit = {
-        onProfileClick()
-    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Titik Temu", style = Typography.headlineMedium) },
                 actions = {
-                    IconButton(onClick = handleProfileClick) {
+                    IconButton(onClick = onProfileClick) {
                         Icon(Icons.Default.Person, contentDescription = "Profile")
                     }
                 }

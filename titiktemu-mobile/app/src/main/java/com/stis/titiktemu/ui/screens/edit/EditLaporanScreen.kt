@@ -32,9 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.components.LoadingDialog
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.screens.edit.EditViewModel
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
@@ -47,7 +49,7 @@ fun EditLaporanScreen(
     onSuccess: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = EditViewModel(context)
+    val viewModel: EditViewModel = viewModel(factory = ViewModelFactory(context))
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val updateState by viewModel.updateState.collectAsStateWithLifecycle()
 

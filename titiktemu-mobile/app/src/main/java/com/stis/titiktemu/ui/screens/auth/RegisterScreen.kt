@@ -34,8 +34,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
 import com.stis.titiktemu.ui.components.CustomTextField
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.TextSecondary
 import com.stis.titiktemu.ui.theme.Typography
@@ -48,7 +50,7 @@ fun RegisterScreen(
     onNavigateToLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = AuthViewModel(context)
+    val viewModel: AuthViewModel = viewModel(factory = ViewModelFactory(context))
     val loginState by viewModel.loginState.collectAsStateWithLifecycle()
 
     var username by remember { mutableStateOf("") }
@@ -63,7 +65,8 @@ fun RegisterScreen(
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
 
     LaunchedEffect(loginState) {
-        if (loginState is Resource.Success) {
+        // Only navigate if registration was successful AND returned a non-empty token
+        if (loginState is Resource.Success && (loginState as Resource.Success).data.isNotEmpty()) {
             onNavigateToHome()
         }
     }

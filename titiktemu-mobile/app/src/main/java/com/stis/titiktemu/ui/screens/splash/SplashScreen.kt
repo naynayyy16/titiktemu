@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.Surface
 import com.stis.titiktemu.ui.theme.Typography
@@ -26,27 +28,13 @@ fun SplashScreen(
     onNavigateToLogin: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel = try {
-        SplashViewModel(context)
-    } catch (e: Exception) {
-        // Fallback if ViewModel initialization fails
-        null
-    }
+    val viewModel: SplashViewModel = viewModel(factory = ViewModelFactory(context))
 
     LaunchedEffect(Unit) {
-        try {
-            if (viewModel != null) {
-                // Just show splash for 2 seconds, then go to Home
-                // Users can login anytime from Home screen
-                viewModel.navigateToHome(onNavigateToHome)
-            } else {
-                // Fallback navigation
-                onNavigateToHome()
-            }
-        } catch (e: Exception) {
-            // Last resort - navigate to home
-            onNavigateToHome()
-        }
+        viewModel.checkTokenAndNavigate(
+            onNavigateToHome = onNavigateToHome,
+            onNavigateToLogin = onNavigateToLogin
+        )
     }
 
     Box(

@@ -19,28 +19,23 @@ class SplashViewModel(context: Context) : ViewModel() {
             try {
                 delay(2000) // Splash duration
                 val token = preferencesManager.getToken()
+                Log.d("SplashViewModel", "Token check - Token value: '$token'")
+                Log.d("SplashViewModel", "Token is null: ${token == null}")
+                Log.d("SplashViewModel", "Token is empty: ${token?.isEmpty()}")
+                Log.d("SplashViewModel", "Token is 'null' string: ${token == "null"}")
+                
+                // Valid token must exist, not be null, not be "null" string, and not be empty
                 if (!token.isNullOrEmpty() && token != "null") {
+                    Log.d("SplashViewModel", "✅ Valid token found - Navigating to Home")
                     onNavigateToHome()
                 } else {
+                    Log.d("SplashViewModel", "❌ No valid token - Navigating to Login")
                     onNavigateToLogin()
                 }
             } catch (e: Exception) {
                 Log.e("SplashViewModel", "Error checking token", e)
                 // Default to login on error
                 onNavigateToLogin()
-            }
-        }
-    }
-
-    fun navigateToHome(onNavigateToHome: () -> Unit) {
-        viewModelScope.launch {
-            try {
-                delay(2000) // Splash duration
-                Log.d("SplashViewModel", "Navigating to Home without login check")
-                onNavigateToHome()
-            } catch (e: Exception) {
-                Log.e("SplashViewModel", "Error navigating to home", e)
-                onNavigateToHome()
             }
         }
     }
