@@ -18,13 +18,13 @@ class ProfileViewModel(context: Context) : ViewModel() {
     private val _profileState = MutableStateFlow<Resource<User>>(Resource.Loading())
     val profileState = _profileState.asStateFlow()
 
-    private val _updateState = MutableStateFlow<Resource<User>>(Resource.Loading())
+    private val _updateState = MutableStateFlow<Resource<User>>(Resource.Idle())
     val updateState = _updateState.asStateFlow()
 
-    private val _passwordState = MutableStateFlow<Resource<String>>(Resource.Success(""))
+    private val _passwordState = MutableStateFlow<Resource<String>>(Resource.Idle())
     val passwordState = _passwordState.asStateFlow()
 
-    private val _deleteState = MutableStateFlow<Resource<String>>(Resource.Success(""))
+    private val _deleteState = MutableStateFlow<Resource<String>>(Resource.Idle())
     val deleteState = _deleteState.asStateFlow()
 
     fun loadProfile() {
@@ -57,6 +57,7 @@ class ProfileViewModel(context: Context) : ViewModel() {
                 is Resource.Success -> Resource.Success("Password changed successfully")
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
+                is Resource.Idle -> Resource.Idle()
             }
         }
     }
@@ -69,6 +70,7 @@ class ProfileViewModel(context: Context) : ViewModel() {
                 is Resource.Success -> Resource.Success("Account deleted")
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
+                is Resource.Idle -> Resource.Idle()
             }
         }
     }

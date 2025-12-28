@@ -99,6 +99,9 @@ fun HomeScreen(
 
             // Content
             when (laporanState) {
+                is Resource.Idle -> {
+                    // Initial state - no action needed
+                }
                 is Resource.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

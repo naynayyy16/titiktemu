@@ -90,6 +90,9 @@ fun DetailLaporanScreen(
         }
     ) { paddingValues ->
         when (laporanState) {
+            is Resource.Idle -> {
+                // Initial state - no action needed
+            }
             is Resource.Loading -> {
                 LoadingDialog()
             }

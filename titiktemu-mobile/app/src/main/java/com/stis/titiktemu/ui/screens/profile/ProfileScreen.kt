@@ -77,6 +77,9 @@ fun ProfileScreen(
         }
     ) { paddingValues ->
         when (profileState) {
+            is Resource.Idle -> {
+                // Initial state - no action needed
+            }
             is Resource.Loading -> LoadingDialog()
             is Resource.Success -> {
                 val user = (profileState as Resource.Success).data

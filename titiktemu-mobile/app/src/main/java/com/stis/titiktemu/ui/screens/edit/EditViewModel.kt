@@ -16,7 +16,7 @@ class EditViewModel(context: Context) : ViewModel() {
     private val _laporanState = MutableStateFlow<Resource<Laporan>>(Resource.Loading())
     val laporanState = _laporanState.asStateFlow()
 
-    private val _updateState = MutableStateFlow<Resource<Laporan>>(Resource.Loading())
+    private val _updateState = MutableStateFlow<Resource<Laporan>>(Resource.Idle())
     val updateState = _updateState.asStateFlow()
 
     fun loadLaporanDetail(id: Long) {

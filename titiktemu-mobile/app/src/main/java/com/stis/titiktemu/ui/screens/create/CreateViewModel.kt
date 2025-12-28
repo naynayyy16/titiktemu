@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class CreateViewModel(context: Context) : ViewModel() {
     private val laporanRepository = LaporanRepository(context)
 
-    private val _createState = MutableStateFlow<Resource<Laporan>>(Resource.Loading())
+    private val _createState = MutableStateFlow<Resource<Laporan>>(Resource.Idle())
     val createState = _createState.asStateFlow()
 
     fun createLaporan(

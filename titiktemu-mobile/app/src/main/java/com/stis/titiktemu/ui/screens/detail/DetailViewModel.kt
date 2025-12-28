@@ -16,7 +16,7 @@ class DetailViewModel(context: Context) : ViewModel() {
     private val _laporanState = MutableStateFlow<Resource<Laporan>>(Resource.Loading())
     val laporanState = _laporanState.asStateFlow()
 
-    private val _deleteState = MutableStateFlow<Resource<String>>(Resource.Success(""))
+    private val _deleteState = MutableStateFlow<Resource<String>>(Resource.Idle())
     val deleteState = _deleteState.asStateFlow()
 
     fun loadLaporanDetail(id: Long) {
@@ -35,6 +35,7 @@ class DetailViewModel(context: Context) : ViewModel() {
                 is Resource.Success -> Resource.Success("Deleted")
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
+                is Resource.Idle -> Resource.Idle()
             }
         }
     }

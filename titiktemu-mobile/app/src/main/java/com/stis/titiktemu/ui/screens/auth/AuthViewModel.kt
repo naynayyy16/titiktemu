@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 class AuthViewModel(context: Context) : ViewModel() {
     private val authRepository = AuthRepository(context)
 
-    // Login state - Start with Idle state, not empty Success
-    private val _loginState = MutableStateFlow<Resource<String>>(Resource.Loading())
+    // Login state - Start with Idle state, not Loading
+    private val _loginState = MutableStateFlow<Resource<String>>(Resource.Idle())
     val loginState = _loginState.asStateFlow()
 
     fun login(username: String, password: String) {
@@ -24,6 +24,7 @@ class AuthViewModel(context: Context) : ViewModel() {
                 is Resource.Success -> Resource.Success(result.data.token)
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
+                is Resource.Idle -> Resource.Idle()
             }
         }
     }
@@ -46,6 +47,7 @@ class AuthViewModel(context: Context) : ViewModel() {
                 is Resource.Success -> Resource.Success(result.data.token)
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
+                is Resource.Idle -> Resource.Idle()
             }
         }
     }
