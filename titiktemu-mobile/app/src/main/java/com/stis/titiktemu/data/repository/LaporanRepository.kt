@@ -1,12 +1,18 @@
 package com.stis.titiktemu.data.repository
 
 import android.content.Context
+import android.net.Uri
 import com.stis.titiktemu.data.api.RetrofitClient
 import com.stis.titiktemu.data.model.Laporan
 import com.stis.titiktemu.data.model.LaporanRequest
 import com.stis.titiktemu.data.model.MessageResponse
 import com.stis.titiktemu.data.model.UpdateLaporanRequest
 import com.stis.titiktemu.util.Resource
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 class LaporanRepository(private val context: Context) {
     private val laporanApi = RetrofitClient.getLaporanApi(context)
@@ -41,11 +47,32 @@ class LaporanRepository(private val context: Context) {
         deskripsi: String,
         kategori: String,
         lokasi: String,
-        tanggalKejadian: String
+        tanggalKejadian: String,
+        imageUri: Uri? = null
     ): Resource<Laporan> {
         return try {
-            val request = LaporanRequest(tipe, judul, deskripsi, kategori, lokasi, tanggalKejadian)
-            val laporan = laporanApi.createLaporan(request)
+            val tipeBody = tipe.toRequestBody("text/plain".toMediaTypeOrNull())
+            val judulBody = judul.toRequestBody("text/plain".toMediaTypeOrNull())
+            val deskripsiBody = deskripsi.toRequestBody("text/plain".toMediaTypeOrNull())
+            val kategoriBody = kategori.toRequestBody("text/plain".toMediaTypeOrNull())
+            val lokasiBody = lokasi.toRequestBody("text/plain".toMediaTypeOrNull())
+            val tanggalBody = tanggalKejadian.toRequestBody("text/plain".toMediaTypeOrNull())
+            
+            val fotoPart = imageUri?.let { uri ->
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+                inputStream?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("foto", file.name, requestFile)
+            }
+            
+            val laporan = laporanApi.createLaporan(
+                tipeBody, judulBody, deskripsiBody, kategoriBody, lokasiBody, tanggalBody, fotoPart
+            )
             Resource.Success(laporan)
         } catch (e: Exception) {
             Resource.Error("Failed to create laporan: ${e.message}")
@@ -54,16 +81,37 @@ class LaporanRepository(private val context: Context) {
 
     suspend fun updateLaporan(
         id: Long,
-        judul: String? = null,
-        deskripsi: String? = null,
-        kategori: String? = null,
-        lokasi: String? = null,
-        tanggalKejadian: String? = null,
-        status: String? = null
+        judul: String,
+        deskripsi: String,
+        kategori: String,
+        lokasi: String,
+        tanggalKejadian: String,
+        status: String,
+        imageUri: Uri? = null
     ): Resource<Laporan> {
         return try {
-            val request = UpdateLaporanRequest(judul, deskripsi, kategori, lokasi, tanggalKejadian, status)
-            val laporan = laporanApi.updateLaporan(id, request)
+            val judulBody = judul.toRequestBody("text/plain".toMediaTypeOrNull())
+            val deskripsiBody = deskripsi.toRequestBody("text/plain".toMediaTypeOrNull())
+            val kategoriBody = kategori.toRequestBody("text/plain".toMediaTypeOrNull())
+            val lokasiBody = lokasi.toRequestBody("text/plain".toMediaTypeOrNull())
+            val tanggalBody = tanggalKejadian.toRequestBody("text/plain".toMediaTypeOrNull())
+            val statusBody = status.toRequestBody("text/plain".toMediaTypeOrNull())
+            
+            val fotoPart = imageUri?.let { uri ->
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+                inputStream?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("foto", file.name, requestFile)
+            }
+            
+            val laporan = laporanApi.updateLaporan(
+                id, judulBody, deskripsiBody, kategoriBody, lokasiBody, tanggalBody, statusBody, fotoPart
+            )
             Resource.Success(laporan)
         } catch (e: Exception) {
             Resource.Error("Failed to update laporan: ${e.message}")

@@ -10,12 +10,20 @@ import com.stis.titiktemu.model.Laporan.TipeLaporan;
 import com.stis.titiktemu.model.User;
 import com.stis.titiktemu.repository.LaporanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,12 +35,14 @@ public class LaporanService {
     @Autowired
     private UserService userService;
 
+    @Value("${upload.path:uploads}")
+    private String uploadPath;
+
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // Create laporan
-    // Menambahkan @Transactional adalah best practice untuk operasi tulis (create)
+    // Create laporan with file upload
     @Transactional
-    public LaporanResponse createLaporan(LaporanRequest request) {
+    public LaporanResponse createLaporan(LaporanRequest request, MultipartFile foto) {
         User currentUser = userService.getCurrentUser();
 
         Laporan laporan = new Laporan();
@@ -45,9 +55,41 @@ public class LaporanService {
         laporan.setTanggalKejadian(LocalDate.parse(request.getTanggalKejadian(), dateFormatter));
         laporan.setStatus(StatusLaporan.AKTIF);
 
+        // Handle file upload
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String fileName = saveFile(foto);
+                laporan.setFotoUrl("/uploads/" + fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
+            }
+        }
+
         laporanRepository.save(laporan);
 
         return mapToLaporanResponse(laporan);
+    }
+
+    private String saveFile(MultipartFile file) throws IOException {
+        // Create upload directory if not exists
+        Path uploadDir = Paths.get(uploadPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String fileName = UUID.randomUUID().toString() + extension;
+
+        // Save file
+        Path filePath = uploadDir.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return fileName;
     }
 
     // Get all laporan (method read-only)
@@ -82,7 +124,7 @@ public class LaporanService {
 
     // Update laporan (method tulis/write)
     @Transactional // <-- FIX UNTUK UPDATE (PUT). (Perhatikan: *bukan* readOnly=true)
-    public LaporanResponse updateLaporan(Long id, UpdateLaporanRequest request) {
+    public LaporanResponse updateLaporan(Long id, UpdateLaporanRequest request, MultipartFile foto) {
         User currentUser = userService.getCurrentUser();
 
         // Sesi akan tetap terbuka selama method ini berjalan
@@ -112,6 +154,16 @@ public class LaporanService {
         }
         if (request.getStatus() != null && !request.getStatus().isEmpty()) {
             laporan.setStatus(StatusLaporan.valueOf(request.getStatus().toUpperCase()));
+        }
+
+        // Handle file upload
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String fileName = saveFile(foto);
+                laporan.setFotoUrl("/uploads/" + fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
+            }
         }
 
         laporanRepository.save(laporan);

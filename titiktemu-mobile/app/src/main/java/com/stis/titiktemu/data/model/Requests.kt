@@ -45,7 +45,8 @@ data class LaporanRequest(
     val deskripsi: String,
     val kategori: String,
     val lokasi: String,
-    val tanggalKejadian: String
+    val tanggalKejadian: String,
+    val fotoUrl: String? = null
 )
 
 data class UpdateLaporanRequest(

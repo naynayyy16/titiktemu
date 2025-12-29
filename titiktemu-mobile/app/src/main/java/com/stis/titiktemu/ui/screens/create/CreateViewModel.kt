@@ -1,6 +1,7 @@
 package com.stis.titiktemu.ui.screens.create
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stis.titiktemu.data.api.UnauthorizedException
@@ -28,13 +29,14 @@ class CreateViewModel(context: Context) : ViewModel() {
         deskripsi: String,
         kategori: String,
         lokasi: String,
-        tanggalKejadian: String
+        tanggalKejadian: String,
+        imageUri: Uri? = null
     ) {
         _createState.value = Resource.Loading()
         viewModelScope.launch {
             try {
                 val result = laporanRepository.createLaporan(
-                    tipe, judul, deskripsi, kategori, lokasi, tanggalKejadian
+                    tipe, judul, deskripsi, kategori, lokasi, tanggalKejadian, imageUri
                 )
                 _createState.value = result
             } catch (e: UnauthorizedException) {
