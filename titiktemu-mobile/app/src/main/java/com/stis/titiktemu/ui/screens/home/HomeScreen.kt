@@ -20,6 +20,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +49,20 @@ fun HomeScreen(
     val viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(context))
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onLogout()
+        }
+    }
+    
+    // Reload data when returning from detail/edit
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.loadLaporan(selectedFilter)
+        }
+    }
 
     Scaffold(
         topBar = {

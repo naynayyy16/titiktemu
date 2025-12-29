@@ -1,7 +1,7 @@
 package com.stis.titiktemu.util
 
 object Constants {
-    const val BASE_URL = "http://10.5.50.127:8080/api/"
+    const val BASE_URL = "http://10.38.81.165:8080/api/"
     const val PREF_TOKEN = "token"
     const val PREF_USERNAME = "username"
     const val PREF_EMAIL = "email"

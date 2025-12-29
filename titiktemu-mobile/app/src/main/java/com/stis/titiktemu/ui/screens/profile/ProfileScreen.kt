@@ -59,6 +59,13 @@ fun ProfileScreen(
 
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onLogout() // Navigate to login when session expires
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadProfile()

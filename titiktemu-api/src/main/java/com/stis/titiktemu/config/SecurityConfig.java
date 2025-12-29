@@ -84,7 +84,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://10.0.2.2:5173",  // Android emulator
                 "http://10.0.2.2:3000",  // Android emulator
-                "http://10.5.50.*"       // Allow all IPs in 10.5.50.x range
+                "http://10.5.50.*",      // Allow all IPs in 10.5.50.x range
+                "http://10.38.81.*"      // Allow all IPs in 10.38.81.x range (current network)
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

@@ -1,5 +1,7 @@
 package com.stis.titiktemu.ui.screens.edit
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +46,7 @@ import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.components.LoadingDialog
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.screens.edit.EditViewModel
+import com.stis.titiktemu.ui.theme.Primary
 import com.stis.titiktemu.ui.theme.Typography
 import com.stis.titiktemu.util.Resource
 
@@ -59,6 +68,24 @@ fun EditLaporanScreen(
     var lokasi by remember { mutableStateOf("") }
     var tanggalKejadian by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("AKTIF") }
+    
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onBack() // Navigate back when session expires
+        }
+    }
+    
+    // Listen for error messages
+    LaunchedEffect(Unit) {
+        viewModel.errorMessage.collect { error ->
+            errorMessage = error
+            showErrorDialog = true
+        }
+    }
 
     LaunchedEffect(laporanId) {
         viewModel.loadLaporanDetail(laporanId)
@@ -176,5 +203,28 @@ fun EditLaporanScreen(
                 )
             }
         }
+    }
+    
+    // Error dialog
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
+            title = { Text("Warning", color = Color.Red) },
+            text = { Text("Anda tidak memiliki akses pada laporan ini!") },
+            confirmButton = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = { showErrorDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    ) {
+                        Text("OK")
+                    }
+                }
+            }
+        )
     }
 }

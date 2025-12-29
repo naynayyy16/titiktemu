@@ -58,6 +58,23 @@ fun DetailLaporanScreen(
     val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onBack() // Navigate back when session expires
+        }
+    }
+    
+    // Listen for error messages
+    LaunchedEffect(Unit) {
+        viewModel.errorMessage.collect { error ->
+            errorMessage = error
+            showErrorDialog = true
+        }
+    }
 
     LaunchedEffect(laporanId) {
         viewModel.loadLaporanDetail(laporanId)
@@ -197,6 +214,20 @@ fun DetailLaporanScreen(
             dismissButton = {
                 Button(onClick = { showDeleteDialog = false }) {
                     Text("Batal")
+                }
+            }
+        )
+    }
+    
+    // Error dialog
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = { showErrorDialog = false }) {
+                    Text("OK")
                 }
             }
         )

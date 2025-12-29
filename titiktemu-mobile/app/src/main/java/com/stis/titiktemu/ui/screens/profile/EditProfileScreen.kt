@@ -45,6 +45,13 @@ fun EditProfileScreen(onBack: () -> Unit) {
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onBack() // Navigate back when session expires
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadProfile()

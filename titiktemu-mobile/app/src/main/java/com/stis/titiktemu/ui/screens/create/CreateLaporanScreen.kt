@@ -70,6 +70,13 @@ fun CreateLaporanScreen(
 
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    
+    // Listen for logout event
+    LaunchedEffect(Unit) {
+        viewModel.navigateToLogin.collect {
+            onBack() // Navigate back when session expires
+        }
+    }
 
     LaunchedEffect(createState) {
         when (createState) {
@@ -128,34 +135,39 @@ fun CreateLaporanScreen(
             // Kategori Dropdown
             Text("Kategori", style = Typography.labelMedium)
             var kategoriExpanded by remember { mutableStateOf(false) }
-            TextField(
-                value = kategori,
-                onValueChange = {},
+            androidx.compose.foundation.layout.Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp)
-                    .clickable { kategoriExpanded = true },
-                readOnly = true,
-                trailingIcon = {
-                    Icon(
-                        imageVector = if (kategoriExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = null
-                    )
-                }
-            )
-            DropdownMenu(
-                expanded = kategoriExpanded,
-                onDismissRequest = { kategoriExpanded = false },
-                modifier = Modifier.fillMaxWidth(0.85f)
             ) {
-                kategoriOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            kategori = option
-                            kategoriExpanded = false
+                TextField(
+                    value = kategori,
+                    onValueChange = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = { kategoriExpanded = !kategoriExpanded }) {
+                            Icon(
+                                imageVector = if (kategoriExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = null
+                            )
                         }
-                    )
+                    }
+                )
+                DropdownMenu(
+                    expanded = kategoriExpanded,
+                    onDismissRequest = { kategoriExpanded = false },
+                    modifier = Modifier.fillMaxWidth(0.85f)
+                ) {
+                    kategoriOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                kategori = option
+                                kategoriExpanded = false
+                            }
+                        )
+                    }
                 }
             }
 

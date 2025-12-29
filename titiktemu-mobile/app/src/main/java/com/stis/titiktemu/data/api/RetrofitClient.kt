@@ -3,7 +3,7 @@ package com.stis.titiktemu.data.api
 import android.content.Context
 import android.util.Log
 import com.stis.titiktemu.data.local.PreferencesManager
-import com.stis.titiktemu.util.Constants
+import com.stis.titiktemu.util.Config
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -54,10 +54,10 @@ object RetrofitClient {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .build()
 
-            Log.d("RetrofitClient", "Creating Retrofit with base URL: ${Constants.BASE_URL}")
+            Log.d("RetrofitClient", "Creating Retrofit with base URL: ${Config.BASE_URL}")
 
             return Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL)
+                .baseUrl(Config.BASE_URL)
                 .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
