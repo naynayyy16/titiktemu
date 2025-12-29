@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Titik Temu</string>
+    <string name="title_home">Home</string>
+    <string name="title_profile">Profil</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_register">Daftar</string>
+    <string name="btn_logout">Keluar</string>
+</resources>
