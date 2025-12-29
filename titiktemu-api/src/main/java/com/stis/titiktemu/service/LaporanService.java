@@ -56,11 +56,20 @@ public class LaporanService {
         laporan.setStatus(StatusLaporan.AKTIF);
 
         // Handle file upload
+        System.out.println(">>> Foto received: " + (foto != null ? "YES" : "NULL"));
+        if (foto != null) {
+            System.out.println(">>> Foto isEmpty: " + foto.isEmpty());
+            System.out.println(">>> Foto size: " + foto.getSize());
+            System.out.println(">>> Foto name: " + foto.getOriginalFilename());
+        }
+        
         if (foto != null && !foto.isEmpty()) {
             try {
                 String fileName = saveFile(foto);
+                System.out.println(">>> Foto saved as: " + fileName);
                 laporan.setFotoUrl("/uploads/" + fileName);
             } catch (IOException e) {
+                System.err.println(">>> Error saving foto: " + e.getMessage());
                 throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
             }
         }
@@ -73,7 +82,10 @@ public class LaporanService {
     private String saveFile(MultipartFile file) throws IOException {
         // Create upload directory if not exists
         Path uploadDir = Paths.get(uploadPath);
+        System.out.println(">>> Upload directory path: " + uploadDir.toAbsolutePath());
+        
         if (!Files.exists(uploadDir)) {
+            System.out.println(">>> Creating upload directory...");
             Files.createDirectories(uploadDir);
         }
 
@@ -87,7 +99,9 @@ public class LaporanService {
 
         // Save file
         Path filePath = uploadDir.resolve(fileName);
+        System.out.println(">>> Saving file to: " + filePath.toAbsolutePath());
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println(">>> File saved successfully!");
 
         return fileName;
     }

@@ -72,6 +72,13 @@ public class LaporanController {
             @RequestParam(value = "foto", required = false) MultipartFile foto
     ) {
         try {
+            System.out.println(">>> Controller received - tipe: " + tipe);
+            System.out.println(">>> Controller received - judul: " + judul);
+            System.out.println(">>> Controller received - deskripsi: " + deskripsi);
+            System.out.println(">>> Controller received - kategori: " + kategori);
+            System.out.println(">>> Controller received - lokasi: " + lokasi);
+            System.out.println(">>> Controller received - tanggalKejadian: " + tanggalKejadian);
+            
             LaporanRequest request = new LaporanRequest();
             request.setTipe(tipe);
             request.setJudul(judul);
@@ -83,6 +90,8 @@ public class LaporanController {
             LaporanResponse response = laporanService.createLaporan(request, foto);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
+            System.err.println(">>> Controller error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
