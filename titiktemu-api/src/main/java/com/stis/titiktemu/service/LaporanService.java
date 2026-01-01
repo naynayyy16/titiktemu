@@ -67,7 +67,7 @@ public class LaporanService {
             try {
                 String fileName = saveFile(foto);
                 System.out.println(">>> Foto saved as: " + fileName);
-                laporan.setFotoUrl("/uploads/" + fileName);
+                laporan.setFotoUrl("/titiktemu-api/uploads/" + fileName);
             } catch (IOException e) {
                 System.err.println(">>> Error saving foto: " + e.getMessage());
                 throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
@@ -174,7 +174,7 @@ public class LaporanService {
         if (foto != null && !foto.isEmpty()) {
             try {
                 String fileName = saveFile(foto);
-                laporan.setFotoUrl("/uploads/" + fileName);
+                laporan.setFotoUrl("/titiktemu-api/uploads/" + fileName);
             } catch (IOException e) {
                 throw new RuntimeException("Gagal menyimpan foto: " + e.getMessage());
             }

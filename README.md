@@ -4,100 +4,321 @@ Sistem manajemen barang hilang dan ditemukan untuk sivitas akademika Politeknik 
 
 ## 📋 Deskripsi Project
 
-**Titik Temu** adalah layanan web berbasis RESTful API yang memfasilitasi pelaporan dan pencarian barang hilang atau ditemukan di lingkungan kampus Polstat STIS. Sistem ini menggantikan metode konvensional (grup chat) dengan platform terorganisir yang memudahkan proses pengembalian barang kepada pemiliknya.
+**Titik Temu** adalah platform Lost & Found berbasis mobile dan web yang memfasilitasi pelaporan dan pencarian barang hilang atau ditemukan di lingkungan kampus Polstat STIS. Sistem ini menggantikan metode konvensional (grup chat) dengan platform terorganisir yang memudahkan proses pengembalian barang kepada pemiliknya.
 
 ### Fitur Utama
 ✅ Manajemen User (Register, Login, Profile, Change Password, Delete Account)  
 ✅ Laporan Barang Hilang & Ditemukan  
-✅ Filter & Search Laporan  
+✅ Filter & Search Laporan berdasarkan kategori dan tipe  
 ✅ JWT Token-Based Authentication  
+✅ Upload & Display Foto Barang  
 ✅ Dokumentasi API dengan Swagger/OpenAPI  
-✅ Info Kontak Pelapor untuk koordinasi  
+✅ Info Kontak Pelapor untuk koordinasi langsung via WhatsApp  
+✅ Aplikasi Mobile Android dengan Jetpack Compose  
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Spring Boot 3.2.0
+### Backend (API)
+- **Framework**: Spring Boot 3.5.7
 - **Language**: Java 17
-- **Database**: MySQL
+- **Database**: MySQL 8.0
 - **Authentication**: JWT (JSON Web Token)
-- **Documentation**: Swagger/OpenAPI
+- **Documentation**: Swagger/OpenAPI (SpringDoc)
 - **Build Tool**: Maven
+- **File Upload**: Multipart/form-data
+
+### Mobile (Android)
+- **Language**: Kotlin
+- **UI Framework**: Jetpack Compose (Material 3)
+- **Architecture**: MVVM + Repository Pattern
+- **Networking**: Retrofit + OkHttp
+- **Async**: Kotlin Coroutines + Flow
+- **Local Storage**: DataStore (encrypted)
+- **Build Tool**: Gradle (Kotlin DSL)
 
 ---
 
 ## 📁 Struktur Project
 
 ```
-titik-temu/
-├── src/main/java/com/stis/titiktemu/
-│   ├── config/
-│   │   ├── OpenApiConfig.java
-│   │   └── SecurityConfig.java
-│   ├── controller/
-│   │   ├── AuthController.java
-│   │   ├── UserController.java
-│   │   └── LaporanController.java
-│   ├── dto/
-│   │   └── [DTOs].java
-│   ├── exception/
-│   │   └── GlobalExceptionHandler.java
-│   ├── model/
-│   │   ├── User.java
-│   │   └── Laporan.java
-│   ├── repository/
-│   │   ├── UserRepository.java
-│   │   └── LaporanRepository.java
-│   ├── security/
-│   │   ├── JwtUtil.java
-│   │   ├── JwtAuthenticationFilter.java
-│   │   └── CustomUserDetailsService.java
-│   ├── service/
-│   │   ├── AuthService.java
-│   │   ├── UserService.java
-│   │   └── LaporanService.java
-│   └── TitikTemuApplication.java
-├── src/main/resources/
-│   └── application.properties
-└── pom.xml
+titiktemu/
+├── titiktemu-api/              # Backend REST API (Spring Boot)
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/stis/titiktemu/
+│   │   │   │   ├── config/
+│   │   │   │   ├── controller/
+│   │   │   │   ├── dto/
+│   │   │   │   ├── exception/
+│   │   │   │   ├── model/
+│   │   │   │   ├── repository/
+│   │   │   │   ├── security/
+│   │   │   │   ├── service/
+│   │   │   │   └── TitikTemuApplication.java
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   ├── uploads/                # Folder untuk foto upload
+│   ├── db_schema               # Database schema SQL
+│   ├── pom.xml
+│   └── README.md
+│
+├── titiktemu-mobile/           # Android Mobile App (Kotlin)
+│   ├── app/
+│   │   ├── src/
+│   │   │   └── main/
+│   │   │       ├── java/com/stis/titiktemu/
+│   │   │       │   ├── data/
+│   │   │       │   │   ├── api/
+│   │   │       │   │   ├── model/
+│   │   │       │   │   └── repository/
+│   │   │       │   ├── ui/
+│   │   │       │   │   ├── screens/
+│   │   │       │   │   ├── components/
+│   │   │       │   │   └── theme/
+│   │   │       │   ├── util/
+│   │   │       │   ├── MainActivity.kt
+│   │   │       │   └── TitikTemuApp.kt
+│   │   │       ├── res/
+│   │   │       └── AndroidManifest.xml
+│   │   └── build.gradle.kts
+│   ├── build.gradle.kts
+│   └── README.md
+│
+├── uploads/                    # Folder shared upload
+└── README.md                   # File ini
 ```
 
 ---
 
-## 🚀 Cara Menjalankan Project
+## 🚀 Instalasi & Setup
 
-### 1. Persiapan Database
-1. Buka phpMyAdmin
-2. Import file `schema.sql` atau jalankan query SQL yang telah disediakan
-3. Database `titik_temu` akan otomatis terbuat beserta tabel-tabelnya
+### Prasyarat
+- **Java Development Kit (JDK) 17** atau lebih baru
+- **MySQL 8.0** atau lebih baru
+- **Maven 3.6+** (atau gunakan Maven Wrapper `mvnw` yang sudah disediakan)
+- **Android Studio** (untuk mobile app)
+- **Git** (untuk clone repository)
 
-### 2. Konfigurasi Database
-Edit file `application.properties`:
+---
+
+## 📝 Langkah Instalasi
+
+### 1️⃣ Clone Repository
+```bash
+git clone <repository-url>
+cd titiktemu
+```
+
+### 2️⃣ Setup Database
+
+**Metode 1: Auto-Create (RECOMMENDED - Paling Mudah)**
+1. Buka **MySQL** (via phpMyAdmin atau command line)
+2. Buat database kosong:
+   ```sql
+   CREATE DATABASE titik_temu;
+   ```
+3. **SELESAI!** Tabel akan otomatis dibuat saat aplikasi pertama kali running
+4. Spring Boot akan auto-create tabel: `users`, `laporan`, dan `v_laporan_detail`
+
+**Metode 2: Import Manual (OPSIONAL - Jika ingin sample data untuk testing)**
+1. Buka **phpMyAdmin**
+2. Pilih **Import** > **Choose File**
+3. Pilih file `titiktemu-api/db_schema`
+4. Klik **Go/Execute**
+5. Database + tabel + sample data akan terbuat
+
+**Sample data berguna untuk:**
+- Testing tanpa harus register user baru
+- Lihat contoh laporan yang sudah ada
+- Login dengan user: `mahasiswa1`, password: `password123`
+
+### 3️⃣ Konfigurasi IP Address (PENTING!)
+
+**⚠️ WAJIB: Ganti IP Address di 3 file berikut dengan IP komputer Anda!**
+
+Cara cek IP komputer:
+```bash
+# Windows (PowerShell/CMD)
+ipconfig
+
+# Linux/Mac
+ifconfig
+# atau
+ip addr show
+```
+
+**File yang harus diubah:**
+
+#### a. Backend API - `titiktemu-api/src/main/resources/application.properties`
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/titik_temu
+# Ganti sesuai konfigurasi MySQL Anda
+spring.datasource.url=jdbc:mysql://localhost:3306/titik_temu?useSSL=false&serverTimezone=Asia/Jakarta&allowPublicKeyRetrieval=true
 spring.datasource.username=root
-spring.datasource.password=     # Sesuaikan dengan password MySQL Anda
+spring.datasource.password=         # Isi password MySQL Anda (kosongkan jika tidak ada)
 ```
 
-### 3. Install Dependencies
+#### b. Mobile App - `titiktemu-mobile/app/src/main/java/com/stis/titiktemu/util/Config.kt`
+```kotlin
+object Config {
+    const val BASE_URL = "http://IP_ANDA:8080/api/"           // Ganti IP_ANDA
+    const val SERVER_IP = "IP_ANDA"                            // Ganti IP_ANDA
+    const val SERVER_PORT = 8080
+    const val SERVER_BASE = "http://IP_ANDA:8080"             // Ganti IP_ANDA
+}
+```
+
+#### c. Mobile App - `titiktemu-mobile/app/src/main/java/com/stis/titiktemu/util/Constants.kt`
+```kotlin
+object Constants {
+    const val BASE_URL = "http://IP_ANDA:8080/api/"          // Ganti IP_ANDA
+    // ... konstanta lainnya
+}
+```
+
+**Contoh:**
+Jika IP komputer Anda adalah `192.168.1.100`, maka:
+```kotlin
+const val BASE_URL = "http://192.168.1.100:8080/api/"
+const val SERVER_IP = "192.168.1.100"
+const val SERVER_BASE = "http://192.168.1.100:8080"
+```
+
+### 4️⃣ Install & Run Backend API
+
 ```bash
-mvn clean install
+cd titiktemu-api
+
+# Install dependencies
+mvnw clean install
+# Atau jika Maven sudah terinstall global:
+# mvn clean install
+
+# Run aplikasi
+mvnw spring-boot:run
+# Atau:
+# mvn spring-boot:run
 ```
 
-### 4. Run Application
+**Alternatif: Jalankan dari IDE**
+- Buka IntelliJ IDEA / Eclipse
+- Import project Maven
+- Jalankan `TitikTemuApplication.java`
+
+**Verifikasi Backend:**
+- API berjalan di: `http://localhost:8080/api`
+- Swagger UI: `http://localhost:8080/docs/swagger-ui`
+- API Docs: `http://localhost:8080/docs/open-api`
+
+### 5️⃣ Install & Run Mobile App
+
 ```bash
-mvn spring-boot:run
+cd titiktemu-mobile
+
+# Pastikan sudah mengubah IP di Config.kt dan Constants.kt!
+
+# Buka dengan Android Studio
+# File > Open > Pilih folder titiktemu-mobile
+
+# Sync Gradle (otomatis atau klik Sync Now)
+
+# Jalankan di emulator atau device fisik:
+# - Klik tombol Run (▶️)
+# - Pilih device/emulator
 ```
 
-Atau jalankan langsung dari IDE (IntelliJ IDEA / Eclipse):
-- Klik kanan pada `TitikTemuApplication.java`
-- Pilih "Run"
+**Catatan:**
+- Pastikan Android device dan komputer terhubung ke **jaringan WiFi yang sama**
+- Jika menggunakan emulator, gunakan IP komputer (bukan `localhost` atau `10.0.2.2`)
+- Minimal Android SDK 24 (Android 7.0 Nougat)
 
-### 5. Akses API
-- **Base URL**: `http://localhost:8080/api`
-- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-- **API Docs**: `http://localhost:8080/api-docs`
+---
+
+## 📚 Dokumentasi Lengkap
+
+Untuk dokumentasi detail masing-masing komponen:
+- **Backend API**: Lihat [titiktemu-api/README.md](titiktemu-api/README.md)
+- **Mobile App**: Lihat [titiktemu-mobile/README.md](titiktemu-mobile/README.md)
+
+---
+
+## 🧪 Testing
+
+### Test Backend API
+```bash
+cd titiktemu-api
+
+# Run unit tests
+mvnw test
+
+# Test dengan Swagger UI
+# Buka: http://localhost:8080/docs/swagger-ui
+```
+
+### Test Mobile App
+```bash
+cd titiktemu-mobile
+
+# Run unit tests
+./gradlew test
+
+# Run di device
+# Gunakan Android Studio Run/Debug
+```
+
+---
+
+## 📖 Endpoint API (Ringkasan)
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| POST | `/api/auth/register` | Register user baru | ❌ |
+| POST | `/api/auth/login` | Login user | ❌ |
+| GET | `/api/users/profile` | Get user profile | ✅ |
+| PUT | `/api/users/profile` | Update profile | ✅ |
+| PUT | `/api/users/change-password` | Change password | ✅ |
+| DELETE | `/api/users/delete` | Delete account | ✅ |
+| GET | `/api/laporan` | Get semua laporan | ✅ |
+| GET | `/api/laporan/{id}` | Get laporan by ID | ✅ |
+| POST | `/api/laporan` | Create laporan baru | ✅ |
+| PUT | `/api/laporan/{id}` | Update laporan | ✅ |
+| DELETE | `/api/laporan/{id}` | Delete laporan | ✅ |
+| GET | `/api/laporan/filter` | Filter laporan | ✅ |
+
+Dokumentasi lengkap tersedia di Swagger UI.
+
+---
+
+## 🔐 Keamanan
+
+- Password di-hash menggunakan **BCrypt**
+- Token menggunakan **JWT** dengan expiry 24 jam
+- File upload dibatasi maksimal **10MB**
+- CORS dikonfigurasi untuk development
+
+---
+
+## 👥 Tim Pengembang
+
+Developed by STIS Students - Kelas K203403 (Pemrograman Platform Khusus)
+
+---
+
+## 📄 Lisensi
+
+Project ini dibuat untuk keperluan akademik Politeknik Statistika STIS.
+
+---
+
+## 📞 Support
+
+Untuk pertanyaan atau issue, silakan hubungi tim pengembang.
+
+---
+
+**Happy Coding! 🚀**
 
 ---
 

@@ -1,11 +1,18 @@
+-- ============================================================================
 -- Database Schema untuk Titik Temu (Lost and Found STIS)
--- Import file ini ke phpMyAdmin
+-- ============================================================================
+-- File ini OPSIONAL untuk import manual
+-- Aplikasi akan AUTO-CREATE tabel saat pertama running
+-- File ini berguna untuk:
+--   1. Referensi struktur database
+--   2. Sample data untuk testing (recommended untuk development)
+-- ============================================================================
 
 CREATE DATABASE IF NOT EXISTS titik_temu;
 USE titik_temu;
 
 -- Tabel Users
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -21,7 +28,7 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Tabel Laporan
-CREATE TABLE laporan (
+CREATE TABLE IF NOT EXISTS laporan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     tipe ENUM('HILANG', 'TEMUKAN') NOT NULL COMMENT 'HILANG = barang hilang, TEMUKAN = barang ditemukan',
@@ -31,7 +38,7 @@ CREATE TABLE laporan (
     lokasi VARCHAR(200) NOT NULL COMMENT 'Lokasi kejadian (free text)',
     tanggal_kejadian DATE NOT NULL,
     status ENUM('AKTIF', 'SELESAI') DEFAULT 'AKTIF',
-    foto_url VARCHAR(500) NULL COMMENT 'URL foto barang (untuk fitur masa depan)',
+    foto_url VARCHAR(500) NULL COMMENT 'Path foto barang yang di-upload',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -42,19 +49,31 @@ CREATE TABLE laporan (
     INDEX idx_tanggal_kejadian (tanggal_kejadian)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Sample Data untuk Testing
--- Password untuk semua user sample: password123 (sudah di-hash dengan BCrypt)
+-- ============================================================================
+-- Sample Data untuk Testing & Development
+-- ============================================================================
+-- Password untuk semua user: password123
+-- Hash BCrypt: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+-- ============================================================================
 
 INSERT INTO users (username, email, password, nama_lengkap, jabatan, nim_nip, no_hp) VALUES
-('john_doe', 'john@stis.ac.id', '$2a$10$rJ8Z9qZ9Z9Z9Z9Z9Z9Z9ZeN3qZ9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9', 'John Doe', 'Mahasiswa', '222011234', '081234567890'),
-('jane_smith', 'jane@stis.ac.id', '$2a$10$rJ8Z9qZ9Z9Z9Z9Z9Z9Z9ZeN3qZ9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9', 'Jane Smith', 'Dosen', '198501012010', '081234567891'),
-('budi_cs', 'budi@stis.ac.id', '$2a$10$rJ8Z9qZ9Z9Z9Z9Z9Z9Z9ZeN3qZ9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9Z9', 'Budi Santoso', 'Cleaning Service', NULL, '081234567892');
+('mahasiswa1', 'andi.pratama@stis.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Andi Pratama', 'Mahasiswa', '222011001', '6281234567890'),
+('mahasiswa2', 'siti.nurhaliza@stis.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Siti Nurhaliza', 'Mahasiswa', '222011045', '6285678901234'),
+('dosen1', 'dr.budi@stis.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Dr. Budi Santoso, M.Si', 'Dosen', '198503152010121001', '6281987654321'),
+('tendik1', 'rina.admin@stis.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Rina Wati', 'Tendik', '199001102015032001', '6282123456789'),
+('cs1', 'pak.agus@stis.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Agus Setiawan', 'Cleaning Service', NULL, '6285234567890');
 
 INSERT INTO laporan (user_id, tipe, judul, deskripsi, kategori, lokasi, tanggal_kejadian, status) VALUES
-(1, 'HILANG', 'iPhone 13 Pro Warna Biru', 'Hilang saat di kantin, casing warna hitam ada stiker BTS', 'ELEKTRONIK', 'Kantin STIS', '2025-10-20', 'AKTIF'),
-(2, 'TEMUKAN', 'Dompet Kulit Coklat', 'Ditemukan di parkiran, berisi KTM atas nama Ahmad', 'AKSESORIS_PRIBADI', 'Parkiran Motor Gedung A', '2025-10-22', 'AKTIF'),
-(3, 'TEMUKAN', 'Jaket Almamater STIS Ukuran L', 'Jaket almamater warna biru ada badge angkatan 62', 'ATRIBUT_KAMPUS', 'Perpustakaan Lantai 2', '2025-10-21', 'AKTIF'),
-(1, 'HILANG', 'Tumbler Stainless Warna Pink', 'Tumbler pink ada stiker kucing, merek Termos', 'ALAT_MAKAN', 'Gedung Kuliah Lt 3', '2025-10-23', 'SELESAI');
+(1, 'HILANG', 'iPhone 14 Pro Max Warna Ungu', 'Hilang di area kantin saat jam makan siang. Casing warna hitam dengan stiker logo STIS. Mohon bantuannya jika ada yang menemukan.', 'ELEKTRONIK', 'Kantin STIS Lantai 1', '2025-12-28', 'AKTIF'),
+(2, 'TEMUKAN', 'Dompet Kulit Coklat', 'Ditemukan di area parkir motor Gedung A. Berisi KTM atas nama Ahmad Fauzi, SIM C, dan beberapa kartu ATM. Silakan hubungi saya untuk verifikasi.', 'AKSESORIS_PRIBADI', 'Parkiran Motor Gedung A', '2025-12-29', 'AKTIF'),
+(3, 'TEMUKAN', 'Jaket Almamater STIS Ukuran L', 'Ditemukan jaket almamater warna biru di Perpustakaan Lantai 2. Ada badge angkatan 62 dan nama "Rizki" di bagian dalam. Silakan ambil di ruang dosen.', 'ATRIBUT_KAMPUS', 'Perpustakaan Lantai 2', '2025-12-27', 'AKTIF'),
+(1, 'HILANG', 'Kalkulator Casio FX-991ID Plus', 'Hilang di ruang kuliah 301. Kalkulator warna abu-abu, ada tulisan nama "Andi" di bagian belakang pakai spidol permanen.', 'ALAT_TULIS', 'Ruang Kuliah 301', '2025-12-26', 'SELESAI'),
+(4, 'TEMUKAN', 'Flashdisk SanDisk 32GB', 'Ditemukan flashdisk di lab komputer. Warna hitam, merek SanDisk 32GB. Berisi file tugas kuliah. Silakan konfirmasi isi file untuk verifikasi.', 'ELEKTRONIK', 'Lab Komputer Gedung B', '2025-12-30', 'AKTIF'),
+(5, 'TEMUKAN', 'Kartu Mahasiswa (KTM)', 'Ditemukan KTM atas nama "Putri Maharani" NIM 222011078 di area musholla kampus. Silakan ambil di satpam.', 'DOKUMEN', 'Musholla Kampus', '2025-12-30', 'AKTIF'),
+(2, 'HILANG', 'Tumbler Stainless Steel Pink', 'Hilang tumbler warna pink merek Termos 500ml. Ada stiker kucing lucu di bagian depan. Terakhir kali dibawa ke ruang kelas 205.', 'ALAT_MAKAN', 'Ruang Kuliah 205', '2025-12-25', 'SELESAI'),
+(1, 'HILANG', 'Kunci Motor Honda Beat', 'Hilang kunci motor Honda Beat. Gantungan kunci warna merah berbentuk love. Ada gantungan KTM juga. Mohon bantuannya.', 'LAINNYA', 'Area Parkir Motor', '2025-12-31', 'AKTIF'),
+(3, 'TEMUKAN', 'Buku Statistika Matematika Jilid 2', 'Ditemukan buku Statistika Matematika Jilid 2 di kantin. Ada coretan nama "Dimas" di halaman pertama.', 'ALAT_TULIS', 'Kantin STIS', '2025-12-31', 'AKTIF'),
+(4, 'HILANG', 'Earphone TWS Putih', 'Hilang earphone TWS warna putih di perpustakaan lantai 3. Case ada tulisan nama pakai label maker. Reward jika ditemukan.', 'ELEKTRONIK', 'Perpustakaan Lantai 3', '2025-12-29', 'AKTIF');
 
 -- View untuk laporan dengan info user (untuk mempermudah query)
 CREATE VIEW v_laporan_detail AS

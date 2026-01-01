@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String absolutePath = Paths.get(uploadPath).toAbsolutePath().toString().replace("\\", "/");
         
-        registry.addResourceHandler("/uploads/**")
+        registry.addResourceHandler("/titiktemu-api/uploads/**")
                 .addResourceLocations("file:///" + absolutePath + "/");
     }
 }

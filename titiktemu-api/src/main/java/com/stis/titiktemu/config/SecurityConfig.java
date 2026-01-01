@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/laporan",  // Allow public GET /api/laporan (list all reports)
-                                "/uploads/**",   // Allow public access to uploaded files
+                                "/titiktemu-api/uploads/**",   // Allow public access to uploaded files
                                 "/docs/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
