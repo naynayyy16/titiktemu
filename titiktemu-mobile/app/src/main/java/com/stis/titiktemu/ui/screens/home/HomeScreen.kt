@@ -26,7 +26,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.EmptyState
@@ -46,6 +49,7 @@ fun HomeScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(context))
     val laporanState by viewModel.laporanState.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
@@ -57,10 +61,16 @@ fun HomeScreen(
         }
     }
     
-    // Reload data when returning from detail/edit
-    DisposableEffect(Unit) {
+    // Reload data when screen is resumed (kembali dari detail/edit)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadLaporan(selectedFilter)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
-            viewModel.loadLaporan(selectedFilter)
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

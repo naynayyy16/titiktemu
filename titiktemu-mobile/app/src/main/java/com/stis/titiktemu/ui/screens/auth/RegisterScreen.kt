@@ -2,6 +2,7 @@ package com.stis.titiktemu.ui.screens.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +20,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -52,6 +56,7 @@ fun RegisterScreen(
     val context = LocalContext.current
     val viewModel: AuthViewModel = viewModel(factory = ViewModelFactory(context))
     val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -65,9 +70,25 @@ fun RegisterScreen(
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
 
     LaunchedEffect(loginState) {
-        // Only navigate if registration was successful AND returned a non-empty token
-        if (loginState is Resource.Success && (loginState as Resource.Success).data.isNotEmpty()) {
-            onNavigateToHome()
+        when (loginState) {
+            is Resource.Success -> {
+                if ((loginState as Resource.Success).data.isNotEmpty()) {
+                    // Show success message
+                    snackbarHostState.showSnackbar(
+                        message = "Registrasi berhasil! Silakan login untuk melanjutkan."
+                    )
+                    // Reset state before navigating
+                    viewModel.resetLoginState()
+                    // Navigate to login screen after showing success message
+                    onNavigateToLogin()
+                }
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(
+                    message = (loginState as Resource.Error).message
+                )
+            }
+            else -> {}
         }
     }
 
@@ -76,7 +97,8 @@ fun RegisterScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Daftar", style = Typography.headlineMedium) }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -123,27 +145,41 @@ fun RegisterScreen(
             )
 
             // Jabatan Dropdown
-            Text(text = "Jabatan", style = Typography.labelMedium, modifier = Modifier.fillMaxWidth())
-            TextField(
-                value = jabatan,
-                onValueChange = {},
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                readOnly = true
-            )
-            DropdownMenu(
-                expanded = jabatanMenuExpanded,
-                onDismissRequest = { jabatanMenuExpanded = false }
+                    .padding(bottom = 12.dp)
             ) {
-                jabatanOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            jabatan = option
-                            jabatanMenuExpanded = false
-                        }
-                    )
+                OutlinedTextField(
+                    value = jabatan,
+                    onValueChange = {},
+                    label = { Text("Jabatan", style = Typography.labelMedium) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { jabatanMenuExpanded = true },
+                    readOnly = true,
+                    enabled = false,
+                    textStyle = Typography.bodyMedium
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { jabatanMenuExpanded = true }
+                )
+                DropdownMenu(
+                    expanded = jabatanMenuExpanded,
+                    onDismissRequest = { jabatanMenuExpanded = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    jabatanOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                jabatan = option
+                                jabatanMenuExpanded = false
+                            }
+                        )
+                    }
                 }
             }
 
@@ -189,15 +225,6 @@ fun RegisterScreen(
                     style = Typography.bodySmall,
                     color = Primary,
                     modifier = Modifier.clickable { onNavigateToLogin() }
-                )
-            }
-
-            if (loginState is Resource.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = (loginState as Resource.Error).message,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
-                    style = Typography.bodySmall
                 )
             }
         }
