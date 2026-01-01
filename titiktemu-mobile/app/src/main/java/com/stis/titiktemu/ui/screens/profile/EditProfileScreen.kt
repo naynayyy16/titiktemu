@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Typography
@@ -113,41 +114,15 @@ fun EditProfileScreen(onBack: () -> Unit) {
             )
 
             // Jabatan Dropdown
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                OutlinedTextField(
-                    value = jabatan,
-                    onValueChange = {},
-                    label = { Text("Jabatan", style = Typography.labelMedium) },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = true,
-                    enabled = false,
-                    textStyle = Typography.bodyMedium
-                )
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable { jabatanMenuExpanded = true }
-                )
-                DropdownMenu(
-                    expanded = jabatanMenuExpanded,
-                    onDismissRequest = { jabatanMenuExpanded = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    jabatanOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                jabatan = option
-                                jabatanMenuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            CustomDropdownField(
+                value = jabatan,
+                onValueChange = { jabatan = it },
+                label = "Jabatan",
+                options = jabatanOptions,
+                expanded = jabatanMenuExpanded,
+                onExpandedChange = { jabatanMenuExpanded = it },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
             CustomTextField(
                 value = nimNip,

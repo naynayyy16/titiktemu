@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.components.LoadingDialog
 import com.stis.titiktemu.ui.screens.ViewModelFactory
@@ -174,50 +175,20 @@ fun EditLaporanScreen(
                 )
 
                 // Kategori Dropdown
-                Text("Kategori", style = Typography.labelMedium)
                 val kategoriOptions = listOf(
                     "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", 
                     "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
                 )
                 var kategoriExpanded by remember { mutableStateOf(false) }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                ) {
-                    TextField(
-                        value = kategori,
-                        onValueChange = {},
-                        modifier = Modifier.fillMaxWidth(),
-                        readOnly = true,
-                        trailingIcon = {
-                            IconButton(onClick = { kategoriExpanded = !kategoriExpanded }) {
-                                Icon(
-                                    imageVector = if (kategoriExpanded) 
-                                        Icons.Default.KeyboardArrowUp 
-                                    else 
-                                        Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    )
-                    DropdownMenu(
-                        expanded = kategoriExpanded,
-                        onDismissRequest = { kategoriExpanded = false },
-                        modifier = Modifier.fillMaxWidth(0.85f)
-                    ) {
-                        kategoriOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option) },
-                                onClick = {
-                                    kategori = option
-                                    kategoriExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
+                CustomDropdownField(
+                    value = kategori,
+                    onValueChange = { kategori = it },
+                    label = "Kategori",
+                    options = kategoriOptions,
+                    expanded = kategoriExpanded,
+                    onExpandedChange = { kategoriExpanded = it },
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
 
                 CustomTextField(
                     value = lokasi,
@@ -283,49 +254,17 @@ fun EditLaporanScreen(
                 )
 
                 // Status dropdown
-                Text("Status", style = Typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
+                val statusOptions = listOf("AKTIF", "SELESAI")
                 var statusExpanded by remember { mutableStateOf(false) }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { statusExpanded = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = status,
-                            modifier = Modifier.weight(1f),
-                            style = Typography.bodyMedium
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = statusExpanded,
-                        onDismissRequest = { statusExpanded = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("AKTIF") },
-                            onClick = { 
-                                status = "AKTIF"
-                                statusExpanded = false 
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("SELESAI") },
-                            onClick = { 
-                                status = "SELESAI"
-                                statusExpanded = false 
-                            }
-                        )
-                    }
-                }
+                CustomDropdownField(
+                    value = status,
+                    onValueChange = { status = it },
+                    label = "Status",
+                    options = statusOptions,
+                    expanded = statusExpanded,
+                    onExpandedChange = { statusExpanded = it },
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
 
                 CustomButton(
                     text = "Update",
