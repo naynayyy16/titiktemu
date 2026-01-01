@@ -30,10 +30,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -72,16 +79,88 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
+            .background(Color.White)
+    ) {
+        // Decorative Background Elements
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+            
+            // Top wave pattern
+            val topPath = Path().apply {
+                moveTo(0f, height * 0.15f)
+                cubicTo(
+                    width * 0.3f, height * 0.10f,
+                    width * 0.7f, height * 0.20f,
+                    width, height * 0.15f
+                )
+                lineTo(width, 0f)
+                lineTo(0f, 0f)
+                close()
+            }
+            
+            drawPath(
+                path = topPath,
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Primary.copy(alpha = 0.1f),
-                        Primary.copy(alpha = 0.05f),
-                        Color.White
+                        Primary.copy(alpha = 0.15f),
+                        Primary.copy(alpha = 0.05f)
                     )
                 )
             )
-    ) {
+            
+            // Floating circles - top right
+            drawCircle(
+                color = Primary.copy(alpha = 0.08f),
+                radius = 100f,
+                center = Offset(width * 0.85f, height * 0.12f)
+            )
+            
+            drawCircle(
+                color = Primary.copy(alpha = 0.12f),
+                radius = 60f,
+                center = Offset(width * 0.92f, height * 0.08f)
+            )
+            
+            // Floating circles - middle left
+            drawCircle(
+                color = Primary.copy(alpha = 0.06f),
+                radius = 80f,
+                center = Offset(width * 0.10f, height * 0.35f)
+            )
+            
+            drawCircle(
+                color = Primary.copy(alpha = 0.10f),
+                radius = 40f,
+                center = Offset(width * 0.15f, height * 0.42f)
+            )
+            
+            // Bottom decorative circles
+            drawCircle(
+                color = Primary.copy(alpha = 0.08f),
+                radius = 120f,
+                center = Offset(width * 0.20f, height * 0.92f)
+            )
+            
+            drawCircle(
+                color = Primary.copy(alpha = 0.10f),
+                radius = 70f,
+                center = Offset(width * 0.88f, height * 0.88f)
+            )
+            
+            // Small accent circles
+            drawCircle(
+                color = Primary.copy(alpha = 0.15f),
+                radius = 20f,
+                center = Offset(width * 0.75f, height * 0.55f)
+            )
+            
+            drawCircle(
+                color = Primary.copy(alpha = 0.12f),
+                radius = 15f,
+                center = Offset(width * 0.30f, height * 0.65f)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -92,24 +171,59 @@ fun WelcomeScreen(
             // Icon/Logo Area
             Box(
                 modifier = Modifier
-                    .size(200.dp)
-                    .scale(iconScale)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Primary.copy(alpha = 0.2f),
-                                Primary.copy(alpha = 0.05f)
-                            )
-                        ),
-                        shape = CircleShape
-                    ),
+                    .size(220.dp)
+                    .scale(iconScale),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.titiktemu_logo),
-                    contentDescription = "Titik Temu Logo",
-                    modifier = Modifier.size(150.dp)
+                // Outer ring
+                Box(
+                    modifier = Modifier
+                        .size(220.dp)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Primary.copy(alpha = 0.15f),
+                                    Primary.copy(alpha = 0.05f),
+                                    Color.Transparent
+                                )
+                            ),
+                            shape = CircleShape
+                        )
                 )
+                
+                // Middle ring
+                Box(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Primary.copy(alpha = 0.20f),
+                                    Primary.copy(alpha = 0.08f),
+                                    Color.Transparent
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                )
+                
+                // Logo container
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .background(
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                        .padding(20.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.titiktemu_logo),
+                        contentDescription = "Titik Temu Logo",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(48.dp))
