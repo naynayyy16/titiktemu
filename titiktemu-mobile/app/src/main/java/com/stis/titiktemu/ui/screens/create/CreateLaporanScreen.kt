@@ -1,8 +1,14 @@
 package com.stis.titiktemu.ui.screens.create
 
+import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -40,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.screens.create.CreateViewModel
@@ -63,10 +73,18 @@ fun CreateLaporanScreen(
     var deskripsi by remember { mutableStateOf("") }
     var lokasi by remember { mutableStateOf("") }
     var tanggalKejadian by remember { mutableStateOf(LocalDate.now().toString()) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var kategoriExpanded by remember { mutableStateOf(false) }
 
     val kategoriOptions = listOf(
         "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
     )
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
 
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -133,43 +151,15 @@ fun CreateLaporanScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Kategori Dropdown
-            Text("Kategori", style = Typography.labelMedium)
-            var kategoriExpanded by remember { mutableStateOf(false) }
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                TextField(
-                    value = kategori,
-                    onValueChange = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = true,
-                    trailingIcon = {
-                        IconButton(onClick = { kategoriExpanded = !kategoriExpanded }) {
-                            Icon(
-                                imageVector = if (kategoriExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                )
-                DropdownMenu(
-                    expanded = kategoriExpanded,
-                    onDismissRequest = { kategoriExpanded = false },
-                    modifier = Modifier.fillMaxWidth(0.85f)
-                ) {
-                    kategoriOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                kategori = option
-                                kategoriExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            CustomDropdownField(
+                value = kategori,
+                onValueChange = { kategori = it },
+                label = "Kategori",
+                options = kategoriOptions,
+                expanded = kategoriExpanded,
+                onExpandedChange = { kategoriExpanded = it },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
             CustomTextField(
                 value = judul,
@@ -198,13 +188,54 @@ fun CreateLaporanScreen(
                 value = tanggalKejadian,
                 onValueChange = { tanggalKejadian = it },
                 label = "Tanggal Kejadian",
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 12.dp)
             )
+
+            // Image Picker
+            Text("Foto (Opsional)", style = Typography.labelMedium)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 24.dp)
+                    .border(
+                        width = 1.dp,
+                        color = androidx.compose.ui.graphics.Color.Gray,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .clickable { imagePickerLauncher.launch("image/*") },
+                contentAlignment = Alignment.Center
+            ) {
+                if (selectedImageUri != null) {
+                    androidx.compose.foundation.Image(
+                        painter = coil.compose.rememberAsyncImagePainter(selectedImageUri),
+                        contentDescription = "Selected Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Photo",
+                            modifier = Modifier.size(48.dp),
+                            tint = androidx.compose.ui.graphics.Color.Gray
+                        )
+                        Text(
+                            "Tap untuk pilih foto",
+                            style = Typography.bodySmall,
+                            color = androidx.compose.ui.graphics.Color.Gray
+                        )
+                    }
+                }
+            }
 
             CustomButton(
                 text = "Simpan",
                 onClick = {
-                    viewModel.createLaporan(tipe, judul, deskripsi, kategori, lokasi, tanggalKejadian)
+                    viewModel.createLaporan(tipe, judul, deskripsi, kategori, lokasi, tanggalKejadian, selectedImageUri)
                 },
                 isLoading = createState is Resource.Loading
             )

@@ -1,6 +1,8 @@
 package com.stis.titiktemu.data.api
 
 import com.stis.titiktemu.data.model.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.*
 
 interface AuthApi {
@@ -38,13 +40,29 @@ interface LaporanApi {
     @GET("laporan/{id}")
     suspend fun getLaporanDetail(@Path("id") id: Long): Laporan
 
+    @Multipart
     @POST("laporan")
-    suspend fun createLaporan(@Body request: LaporanRequest): Laporan
+    suspend fun createLaporan(
+        @Part("tipe") tipe: RequestBody,
+        @Part("judul") judul: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("kategori") kategori: RequestBody,
+        @Part("lokasi") lokasi: RequestBody,
+        @Part("tanggalKejadian") tanggalKejadian: RequestBody,
+        @Part foto: MultipartBody.Part? = null
+    ): Laporan
 
+    @Multipart
     @PUT("laporan/{id}")
     suspend fun updateLaporan(
         @Path("id") id: Long,
-        @Body request: UpdateLaporanRequest
+        @Part("judul") judul: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("kategori") kategori: RequestBody,
+        @Part("lokasi") lokasi: RequestBody,
+        @Part("tanggalKejadian") tanggalKejadian: RequestBody,
+        @Part("status") status: RequestBody,
+        @Part foto: MultipartBody.Part? = null
     ): Laporan
 
     @DELETE("laporan/{id}")

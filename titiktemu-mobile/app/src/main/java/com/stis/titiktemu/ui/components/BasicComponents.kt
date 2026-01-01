@@ -1,6 +1,8 @@
 package com.stis.titiktemu.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,11 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -80,9 +86,12 @@ fun CustomTextField(
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     isPassword: Boolean = false,
+    readOnly: Boolean = false,
+    onClick: (() -> Unit)? = null,
     error: String? = null
 ) {
     val showPassword = remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     Column(modifier = modifier) {
         OutlinedTextField(
@@ -90,10 +99,22 @@ fun CustomTextField(
             onValueChange = onValueChange,
             label = { Text(label, style = Typography.labelMedium) },
             placeholder = { Text(placeholder, style = Typography.bodySmall) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = onClick
+                        )
+                    } else Modifier
+                ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             singleLine = singleLine,
             maxLines = maxLines,
+            readOnly = readOnly,
+            enabled = onClick == null,
             visualTransformation = if (isPassword && !showPassword.value) {
                 PasswordVisualTransformation()
             } else {
@@ -122,6 +143,55 @@ fun CustomTextField(
                 style = Typography.labelSmall,
                 modifier = Modifier.padding(top = 4.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun CustomDropdownField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    options: List<String>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            label = { Text(label, style = Typography.labelMedium) },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { onExpandedChange(!expanded) }) {
+                    Icon(
+                        imageVector = if (expanded) 
+                            Icons.Default.KeyboardArrowUp 
+                        else 
+                            Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Tutup" else "Buka",
+                        tint = TextSecondary
+                    )
+                }
+            },
+            textStyle = Typography.bodyMedium
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, style = Typography.bodyMedium) },
+                    onClick = {
+                        onValueChange(option)
+                        onExpandedChange(false)
+                    }
+                )
+            }
         }
     }
 }

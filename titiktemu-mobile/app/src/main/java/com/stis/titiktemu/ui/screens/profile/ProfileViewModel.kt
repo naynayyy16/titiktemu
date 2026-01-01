@@ -40,10 +40,10 @@ class ProfileViewModel(context: Context) : ViewModel() {
                 val result = userRepository.getProfile()
                 _profileState.value = result
             } catch (e: UnauthorizedException) {
-                _profileState.value = Resource.Error("Session expired")
+                _profileState.value = Resource.Error("Session telah berakhir. Silakan login kembali.")
                 _navigateToLogin.emit(Unit)
             } catch (e: Exception) {
-                _profileState.value = Resource.Error(e.message ?: "Error loading data")
+                _profileState.value = Resource.Error(e.message ?: "Gagal memuat profil")
             }
         }
     }

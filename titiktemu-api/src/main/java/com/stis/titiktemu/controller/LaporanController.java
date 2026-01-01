@@ -16,8 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,12 +32,12 @@ public class LaporanController {
     @Autowired
     private LaporanService laporanService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "Buat laporan baru",
             description = "Membuat laporan barang hilang atau ditemukan. Tipe laporan: HILANG atau TEMUKAN. " +
                     "Kategori: ELEKTRONIK, ALAT_TULIS, AKSESORIS_PRIBADI, ALAT_MAKAN, DOKUMEN, ATRIBUT_KAMPUS, LAINNYA. " +
-                    "Format tanggal: YYYY-MM-DD (contoh: 2025-10-25)"
+                    "Format tanggal: YYYY-MM-DD (contoh: 2025-10-25). Dapat menyertakan foto."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -60,11 +62,36 @@ public class LaporanController {
                     content = @Content
             )
     })
-    public ResponseEntity<?> createLaporan(@Valid @RequestBody LaporanRequest request) {
+    public ResponseEntity<?> createLaporan(
+            @RequestParam("tipe") String tipe,
+            @RequestParam("judul") String judul,
+            @RequestParam("deskripsi") String deskripsi,
+            @RequestParam("kategori") String kategori,
+            @RequestParam("lokasi") String lokasi,
+            @RequestParam("tanggalKejadian") String tanggalKejadian,
+            @RequestParam(value = "foto", required = false) MultipartFile foto
+    ) {
         try {
-            LaporanResponse response = laporanService.createLaporan(request);
+            System.out.println(">>> Controller received - tipe: " + tipe);
+            System.out.println(">>> Controller received - judul: " + judul);
+            System.out.println(">>> Controller received - deskripsi: " + deskripsi);
+            System.out.println(">>> Controller received - kategori: " + kategori);
+            System.out.println(">>> Controller received - lokasi: " + lokasi);
+            System.out.println(">>> Controller received - tanggalKejadian: " + tanggalKejadian);
+            
+            LaporanRequest request = new LaporanRequest();
+            request.setTipe(tipe);
+            request.setJudul(judul);
+            request.setDeskripsi(deskripsi);
+            request.setKategori(kategori);
+            request.setLokasi(lokasi);
+            request.setTanggalKejadian(tanggalKejadian);
+            
+            LaporanResponse response = laporanService.createLaporan(request, foto);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
+            System.err.println(">>> Controller error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
@@ -152,11 +179,11 @@ public class LaporanController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "Update laporan (hanya pemilik laporan)",
             description = "Mengubah informasi laporan. Hanya user yang membuat laporan tersebut yang bisa mengupdate. " +
-                    "Semua field bersifat optional, hanya field yang diisi yang akan diupdate."
+                    "Semua field bersifat optional, hanya field yang diisi yang akan diupdate. Dapat menyertakan foto baru."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -189,10 +216,24 @@ public class LaporanController {
     public ResponseEntity<?> updateLaporan(
             @Parameter(description = "ID laporan yang ingin diupdate", example = "1")
             @PathVariable Long id,
-            @Valid @RequestBody UpdateLaporanRequest request
+            @RequestParam(value = "judul", required = false) String judul,
+            @RequestParam(value = "deskripsi", required = false) String deskripsi,
+            @RequestParam(value = "kategori", required = false) String kategori,
+            @RequestParam(value = "lokasi", required = false) String lokasi,
+            @RequestParam(value = "tanggalKejadian", required = false) String tanggalKejadian,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "foto", required = false) MultipartFile foto
     ) {
         try {
-            LaporanResponse response = laporanService.updateLaporan(id, request);
+            UpdateLaporanRequest request = new UpdateLaporanRequest();
+            request.setJudul(judul);
+            request.setDeskripsi(deskripsi);
+            request.setKategori(kategori);
+            request.setLokasi(lokasi);
+            request.setTanggalKejadian(tanggalKejadian);
+            request.setStatus(status);
+            
+            LaporanResponse response = laporanService.updateLaporan(id, request, foto);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));

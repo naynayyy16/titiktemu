@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.stis.titiktemu.data.model.Laporan
@@ -38,14 +39,21 @@ fun LaporanCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Tentukan warna card berdasarkan status
+    val cardBackgroundColor = when (laporan.status) {
+        "AKTIF" -> Color(0xFF4CAF50).copy(alpha = 0.1f) // Hijau dengan opacity 10%
+        "SELESAI" -> Color(0xFFF44336).copy(alpha = 0.1f) // Merah dengan opacity 10%
+        else -> Surface
+    }
+    
     Card(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

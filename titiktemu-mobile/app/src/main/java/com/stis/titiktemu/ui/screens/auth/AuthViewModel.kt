@@ -44,11 +44,19 @@ class AuthViewModel(context: Context) : ViewModel() {
                 username, email, password, namaLengkap, jabatan, nimNip, noHp
             )
             _loginState.value = when (result) {
-                is Resource.Success -> Resource.Success(result.data.token)
+                is Resource.Success -> {
+                    // Clear token after successful registration so user needs to login
+                    authRepository.clearRegistrationToken()
+                    Resource.Success(result.data.token)
+                }
                 is Resource.Error -> Resource.Error(result.message)
                 is Resource.Loading -> Resource.Loading()
                 is Resource.Idle -> Resource.Idle()
             }
         }
+    }
+    
+    fun resetLoginState() {
+        _loginState.value = Resource.Idle()
     }
 }

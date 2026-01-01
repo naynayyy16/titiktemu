@@ -1,13 +1,18 @@
 package com.stis.titiktemu.data.repository
 
 import android.content.Context
+import com.google.gson.Gson
 import com.stis.titiktemu.data.api.RetrofitClient
 import com.stis.titiktemu.data.local.PreferencesManager
 import com.stis.titiktemu.data.model.ChangePasswordRequest
+import com.stis.titiktemu.data.model.ErrorResponse
 import com.stis.titiktemu.data.model.MessageResponse
 import com.stis.titiktemu.data.model.UpdateProfileRequest
 import com.stis.titiktemu.data.model.User
 import com.stis.titiktemu.util.Resource
+import retrofit2.HttpException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 class UserRepository(private val context: Context) {
     private val userApi = RetrofitClient.getUserApi(context)
@@ -51,8 +56,33 @@ class UserRepository(private val context: Context) {
             val request = ChangePasswordRequest(oldPassword, newPassword)
             val response = userApi.changePassword(request)
             Resource.Success(response)
+        } catch (e: HttpException) {
+            val errorMessage = when (e.code()) {
+                400 -> "Data tidak valid"
+                401 -> "Password lama salah"
+                404 -> "User tidak ditemukan"
+                500 -> "Server error, coba lagi nanti"
+                else -> {
+                    try {
+                        val errorBody = e.response()?.errorBody()?.string()
+                        if (!errorBody.isNullOrEmpty()) {
+                            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                            errorResponse.message ?: "Gagal mengubah password"
+                        } else {
+                            "Gagal mengubah password"
+                        }
+                    } catch (parseException: Exception) {
+                        "Gagal mengubah password"
+                    }
+                }
+            }
+            Resource.Error(errorMessage)
+        } catch (e: UnknownHostException) {
+            Resource.Error("Tidak dapat terhubung ke server. Periksa koneksi internet Anda")
+        } catch (e: SocketTimeoutException) {
+            Resource.Error("Koneksi timeout. Coba lagi")
         } catch (e: Exception) {
-            Resource.Error("Failed to change password: ${e.message}")
+            Resource.Error("Gagal mengubah password: ${e.message}")
         }
     }
 
@@ -61,8 +91,34 @@ class UserRepository(private val context: Context) {
             val response = userApi.deleteAccount()
             preferencesManager.clearAll()
             Resource.Success(response)
+        } catch (e: HttpException) {
+            val errorMessage = when (e.code()) {
+                400 -> "Permintaan tidak valid"
+                401 -> "Tidak dapat memverifikasi akun Anda"
+                403 -> "Akses ditolak"
+                404 -> "Akun tidak ditemukan"
+                500 -> "Server error, coba lagi nanti"
+                else -> {
+                    try {
+                        val errorBody = e.response()?.errorBody()?.string()
+                        if (!errorBody.isNullOrEmpty()) {
+                            val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                            errorResponse.message ?: "Gagal menghapus akun"
+                        } else {
+                            "Gagal menghapus akun"
+                        }
+                    } catch (parseException: Exception) {
+                        "Gagal menghapus akun"
+                    }
+                }
+            }
+            Resource.Error(errorMessage)
+        } catch (e: UnknownHostException) {
+            Resource.Error("Tidak dapat terhubung ke server. Periksa koneksi internet Anda")
+        } catch (e: SocketTimeoutException) {
+            Resource.Error("Koneksi timeout. Coba lagi")
         } catch (e: Exception) {
-            Resource.Error("Failed to delete account: ${e.message}")
+            Resource.Error("Gagal menghapus akun: ${e.message}")
         }
     }
 }

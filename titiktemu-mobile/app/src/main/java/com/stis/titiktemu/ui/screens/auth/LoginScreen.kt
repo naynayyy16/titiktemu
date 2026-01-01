@@ -13,6 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +45,7 @@ fun LoginScreen(
     val context = LocalContext.current
     val viewModel: AuthViewModel = viewModel(factory = ViewModelFactory(context))
     val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -53,13 +56,23 @@ fun LoginScreen(
             onNavigateToHome()
         }
     }
+    
+    // Show snackbar for errors
+    LaunchedEffect(loginState) {
+        if (loginState is Resource.Error) {
+            snackbarHostState.showSnackbar(
+                message = (loginState as Resource.Error).message
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Login", style = Typography.headlineMedium) }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -70,7 +83,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "🎯 Selamat Datang",
+                text = "Selamat Datang",
                 style = Typography.displayMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -120,15 +133,6 @@ fun LoginScreen(
                     style = Typography.bodySmall,
                     color = Primary,
                     modifier = Modifier.clickable { onNavigateToRegister() }
-                )
-            }
-
-            if (loginState is Resource.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = (loginState as Resource.Error).message,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
-                    style = Typography.bodySmall
                 )
             }
         }

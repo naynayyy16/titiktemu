@@ -2,6 +2,7 @@ package com.stis.titiktemu.ui.screens.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +20,10 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
@@ -52,6 +57,7 @@ fun RegisterScreen(
     val context = LocalContext.current
     val viewModel: AuthViewModel = viewModel(factory = ViewModelFactory(context))
     val loginState by viewModel.loginState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -60,14 +66,31 @@ fun RegisterScreen(
     var jabatan by remember { mutableStateOf("Mahasiswa") }
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var jabatanMenuExpanded by remember { mutableStateOf(false) }
 
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
 
     LaunchedEffect(loginState) {
-        // Only navigate if registration was successful AND returned a non-empty token
-        if (loginState is Resource.Success && (loginState as Resource.Success).data.isNotEmpty()) {
-            onNavigateToHome()
+        when (loginState) {
+            is Resource.Success -> {
+                if ((loginState as Resource.Success).data.isNotEmpty()) {
+                    // Show success message
+                    snackbarHostState.showSnackbar(
+                        message = "Registrasi berhasil! Silakan login untuk melanjutkan."
+                    )
+                    // Reset state before navigating
+                    viewModel.resetLoginState()
+                    // Navigate to login screen after showing success message
+                    onNavigateToLogin()
+                }
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(
+                    message = (loginState as Resource.Error).message
+                )
+            }
+            else -> {}
         }
     }
 
@@ -76,7 +99,8 @@ fun RegisterScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Daftar", style = Typography.headlineMedium) }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -123,29 +147,15 @@ fun RegisterScreen(
             )
 
             // Jabatan Dropdown
-            Text(text = "Jabatan", style = Typography.labelMedium, modifier = Modifier.fillMaxWidth())
-            TextField(
+            CustomDropdownField(
                 value = jabatan,
-                onValueChange = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                readOnly = true
-            )
-            DropdownMenu(
+                onValueChange = { jabatan = it },
+                label = "Jabatan",
+                options = jabatanOptions,
                 expanded = jabatanMenuExpanded,
-                onDismissRequest = { jabatanMenuExpanded = false }
-            ) {
-                jabatanOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            jabatan = option
-                            jabatanMenuExpanded = false
-                        }
-                    )
-                }
-            }
+                onExpandedChange = { jabatanMenuExpanded = it },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
             CustomTextField(
                 value = nimNip,
@@ -156,19 +166,33 @@ fun RegisterScreen(
 
             CustomTextField(
                 value = noHp,
-                onValueChange = { noHp = it },
+                onValueChange = { 
+                    noHp = it
+                    phoneError = when {
+                        it.isEmpty() -> null
+                        !it.startsWith("62") -> "Nomor harus dimulai dengan 62"
+                        it.length < 10 -> "Nomor terlalu pendek"
+                        else -> null
+                    }
+                },
                 label = "Nomor HP",
+                placeholder = "Contoh: 628123456789",
                 keyboardType = KeyboardType.Phone,
+                error = phoneError,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
             CustomButton(
                 text = "Daftar",
                 onClick = {
-                    viewModel.register(
-                        username, email, password, namaLengkap, jabatan,
-                        nimNip.ifEmpty { null }, noHp
-                    )
+                    if (!noHp.startsWith("62") || noHp.length < 10) {
+                        phoneError = "Nomor harus dimulai dengan 62 dan minimal 10 digit"
+                    } else {
+                        viewModel.register(
+                            username, email, password, namaLengkap, jabatan,
+                            nimNip.ifEmpty { null }, noHp
+                        )
+                    }
                 },
                 isLoading = loginState is Resource.Loading
             )
@@ -189,15 +213,6 @@ fun RegisterScreen(
                     style = Typography.bodySmall,
                     color = Primary,
                     modifier = Modifier.clickable { onNavigateToLogin() }
-                )
-            }
-
-            if (loginState is Resource.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = (loginState as Resource.Error).message,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
-                    style = Typography.bodySmall
                 )
             }
         }

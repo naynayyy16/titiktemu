@@ -1,8 +1,11 @@
 package com.stis.titiktemu.ui.screens.profile
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -10,10 +13,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Typography
@@ -45,6 +54,10 @@ fun EditProfileScreen(onBack: () -> Unit) {
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+    var jabatanMenuExpanded by remember { mutableStateOf(false) }
+    
+    val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
     
     // Listen for logout event
     LaunchedEffect(Unit) {
@@ -100,10 +113,14 @@ fun EditProfileScreen(onBack: () -> Unit) {
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            CustomTextField(
+            // Jabatan Dropdown
+            CustomDropdownField(
                 value = jabatan,
                 onValueChange = { jabatan = it },
                 label = "Jabatan",
+                options = jabatanOptions,
+                expanded = jabatanMenuExpanded,
+                onExpandedChange = { jabatanMenuExpanded = it },
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -116,8 +133,18 @@ fun EditProfileScreen(onBack: () -> Unit) {
 
             CustomTextField(
                 value = noHp,
-                onValueChange = { noHp = it },
+                onValueChange = { 
+                    noHp = it
+                    phoneError = when {
+                        it.isEmpty() -> null
+                        !it.startsWith("62") -> "Nomor harus dimulai dengan 62"
+                        it.length < 10 -> "Nomor terlalu pendek"
+                        else -> null
+                    }
+                },
                 label = "No HP",
+                placeholder = "Contoh: 628123456789",
+                error = phoneError,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -131,7 +158,11 @@ fun EditProfileScreen(onBack: () -> Unit) {
             CustomButton(
                 text = "Simpan",
                 onClick = {
-                    viewModel.updateProfile(namaLengkap, jabatan, nimNip.ifEmpty { null }, noHp, email)
+                    if (!noHp.startsWith("62") || noHp.length < 10) {
+                        phoneError = "Nomor harus dimulai dengan 62 dan minimal 10 digit"
+                    } else {
+                        viewModel.updateProfile(namaLengkap, jabatan, nimNip.ifEmpty { null }, noHp, email)
+                    }
                 },
                 isLoading = updateState is Resource.Loading
             )
@@ -145,14 +176,26 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val viewModel: ProfileViewModel = viewModel(factory = ViewModelFactory(context))
     val passwordState by viewModel.passwordState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
+    // Handle success - show success message and navigate back
     LaunchedEffect(passwordState) {
-        if (passwordState is Resource.Success) {
-            onBack()
+        when (passwordState) {
+            is Resource.Success -> {
+                snackbarHostState.showSnackbar("Password berhasil diubah!")
+                onBack()
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(
+                    (passwordState as Resource.Error).message
+                )
+            }
+            else -> {}
         }
     }
 
@@ -166,7 +209,8 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -177,7 +221,10 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
         ) {
             CustomTextField(
                 value = oldPassword,
-                onValueChange = { oldPassword = it },
+                onValueChange = { 
+                    oldPassword = it
+                    errorMessage = ""
+                },
                 label = "Password Lama",
                 isPassword = true,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -185,7 +232,10 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
             CustomTextField(
                 value = newPassword,
-                onValueChange = { newPassword = it },
+                onValueChange = { 
+                    newPassword = it
+                    errorMessage = ""
+                },
                 label = "Password Baru",
                 isPassword = true,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -193,30 +243,53 @@ fun ChangePasswordScreen(onBack: () -> Unit) {
 
             CustomTextField(
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                onValueChange = { 
+                    confirmPassword = it
+                    errorMessage = ""
+                },
                 label = "Konfirmasi Password",
                 isPassword = true,
-                modifier = Modifier.padding(bottom = 24.dp)
+                error = if (confirmPassword.isNotEmpty() && confirmPassword != newPassword) 
+                    "Password tidak sama" else null,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            // Show validation error
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                    style = Typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             CustomButton(
                 text = "Ubah Password",
                 onClick = {
-                    if (newPassword == confirmPassword) {
-                        viewModel.changePassword(oldPassword, newPassword)
+                    when {
+                        oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty() -> {
+                            errorMessage = "Semua field harus diisi"
+                        }
+                        newPassword.length < 6 -> {
+                            errorMessage = "Password baru minimal 6 karakter"
+                        }
+                        newPassword != confirmPassword -> {
+                            errorMessage = "Password baru dan konfirmasi tidak sama"
+                        }
+                        oldPassword == newPassword -> {
+                            errorMessage = "Password baru harus berbeda dari password lama"
+                        }
+                        else -> {
+                            errorMessage = ""
+                            viewModel.changePassword(oldPassword, newPassword)
+                        }
                     }
                 },
                 isLoading = passwordState is Resource.Loading
             )
-
-            if (passwordState is Resource.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = (passwordState as Resource.Error).message,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.error,
-                    style = Typography.bodySmall
-                )
-            }
         }
     }
 }

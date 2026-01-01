@@ -1,6 +1,7 @@
 package com.stis.titiktemu.ui.screens.edit
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stis.titiktemu.data.api.UnauthorizedException
@@ -45,18 +46,19 @@ class EditViewModel(context: Context) : ViewModel() {
 
     fun updateLaporan(
         id: Long,
-        judul: String? = null,
-        deskripsi: String? = null,
-        kategori: String? = null,
-        lokasi: String? = null,
-        tanggalKejadian: String? = null,
-        status: String? = null
+        judul: String,
+        deskripsi: String,
+        kategori: String,
+        lokasi: String,
+        tanggalKejadian: String,
+        status: String,
+        imageUri: Uri? = null
     ) {
         _updateState.value = Resource.Loading()
         viewModelScope.launch {
             try {
                 val result = laporanRepository.updateLaporan(
-                    id, judul, deskripsi, kategori, lokasi, tanggalKejadian, status
+                    id, judul, deskripsi, kategori, lokasi, tanggalKejadian, status, imageUri
                 )
                 when (result) {
                     is Resource.Success -> _updateState.value = result
