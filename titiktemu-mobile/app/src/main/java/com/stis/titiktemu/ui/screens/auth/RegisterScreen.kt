@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.theme.Primary
@@ -65,6 +66,7 @@ fun RegisterScreen(
     var jabatan by remember { mutableStateOf("Mahasiswa") }
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var jabatanMenuExpanded by remember { mutableStateOf(false) }
 
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
@@ -145,43 +147,15 @@ fun RegisterScreen(
             )
 
             // Jabatan Dropdown
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                OutlinedTextField(
-                    value = jabatan,
-                    onValueChange = {},
-                    label = { Text("Jabatan", style = Typography.labelMedium) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { jabatanMenuExpanded = true },
-                    readOnly = true,
-                    enabled = false,
-                    textStyle = Typography.bodyMedium
-                )
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable { jabatanMenuExpanded = true }
-                )
-                DropdownMenu(
-                    expanded = jabatanMenuExpanded,
-                    onDismissRequest = { jabatanMenuExpanded = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    jabatanOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                jabatan = option
-                                jabatanMenuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            CustomDropdownField(
+                value = jabatan,
+                onValueChange = { jabatan = it },
+                label = "Jabatan",
+                options = jabatanOptions,
+                expanded = jabatanMenuExpanded,
+                onExpandedChange = { jabatanMenuExpanded = it },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
             CustomTextField(
                 value = nimNip,
@@ -192,19 +166,33 @@ fun RegisterScreen(
 
             CustomTextField(
                 value = noHp,
-                onValueChange = { noHp = it },
+                onValueChange = { 
+                    noHp = it
+                    phoneError = when {
+                        it.isEmpty() -> null
+                        !it.startsWith("62") -> "Nomor harus dimulai dengan 62"
+                        it.length < 10 -> "Nomor terlalu pendek"
+                        else -> null
+                    }
+                },
                 label = "Nomor HP",
+                placeholder = "Contoh: 628123456789",
                 keyboardType = KeyboardType.Phone,
+                error = phoneError,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
             CustomButton(
                 text = "Daftar",
                 onClick = {
-                    viewModel.register(
-                        username, email, password, namaLengkap, jabatan,
-                        nimNip.ifEmpty { null }, noHp
-                    )
+                    if (!noHp.startsWith("62") || noHp.length < 10) {
+                        phoneError = "Nomor harus dimulai dengan 62 dan minimal 10 digit"
+                    } else {
+                        viewModel.register(
+                            username, email, password, namaLengkap, jabatan,
+                            nimNip.ifEmpty { null }, noHp
+                        )
+                    }
                 },
                 isLoading = loginState is Resource.Loading
             )

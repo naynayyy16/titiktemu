@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.screens.ViewModelFactory
 import com.stis.titiktemu.ui.screens.create.CreateViewModel
@@ -73,6 +74,7 @@ fun CreateLaporanScreen(
     var lokasi by remember { mutableStateOf("") }
     var tanggalKejadian by remember { mutableStateOf(LocalDate.now().toString()) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var kategoriExpanded by remember { mutableStateOf(false) }
 
     val kategoriOptions = listOf(
         "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
@@ -149,43 +151,15 @@ fun CreateLaporanScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Kategori Dropdown
-            Text("Kategori", style = Typography.labelMedium)
-            var kategoriExpanded by remember { mutableStateOf(false) }
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-            ) {
-                TextField(
-                    value = kategori,
-                    onValueChange = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = true,
-                    trailingIcon = {
-                        IconButton(onClick = { kategoriExpanded = !kategoriExpanded }) {
-                            Icon(
-                                imageVector = if (kategoriExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                )
-                DropdownMenu(
-                    expanded = kategoriExpanded,
-                    onDismissRequest = { kategoriExpanded = false },
-                    modifier = Modifier.fillMaxWidth(0.85f)
-                ) {
-                    kategoriOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                kategori = option
-                                kategoriExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            CustomDropdownField(
+                value = kategori,
+                onValueChange = { kategori = it },
+                label = "Kategori",
+                options = kategoriOptions,
+                expanded = kategoriExpanded,
+                onExpandedChange = { kategoriExpanded = it },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
             CustomTextField(
                 value = judul,

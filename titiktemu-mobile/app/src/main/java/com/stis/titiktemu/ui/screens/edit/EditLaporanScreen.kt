@@ -20,6 +20,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -33,6 +36,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.stis.titiktemu.ui.components.CustomButton
+import com.stis.titiktemu.ui.components.CustomDropdownField
 import com.stis.titiktemu.ui.components.CustomTextField
 import com.stis.titiktemu.ui.components.LoadingDialog
 import com.stis.titiktemu.ui.screens.ViewModelFactory
@@ -169,10 +174,19 @@ fun EditLaporanScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                CustomTextField(
+                // Kategori Dropdown
+                val kategoriOptions = listOf(
+                    "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", 
+                    "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
+                )
+                var kategoriExpanded by remember { mutableStateOf(false) }
+                CustomDropdownField(
                     value = kategori,
                     onValueChange = { kategori = it },
                     label = "Kategori",
+                    options = kategoriOptions,
+                    expanded = kategoriExpanded,
+                    onExpandedChange = { kategoriExpanded = it },
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
@@ -239,29 +253,18 @@ fun EditLaporanScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                Text("Status", style = Typography.labelMedium)
+                // Status dropdown
+                val statusOptions = listOf("AKTIF", "SELESAI")
                 var statusExpanded by remember { mutableStateOf(false) }
-                TextField(
+                CustomDropdownField(
                     value = status,
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    readOnly = true
-                )
-                DropdownMenu(
+                    onValueChange = { status = it },
+                    label = "Status",
+                    options = statusOptions,
                     expanded = statusExpanded,
-                    onDismissRequest = { statusExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("AKTIF") },
-                        onClick = { status = "AKTIF"; statusExpanded = false }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("SELESAI") },
-                        onClick = { status = "SELESAI"; statusExpanded = false }
-                    )
-                }
+                    onExpandedChange = { statusExpanded = it },
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
 
                 CustomButton(
                     text = "Update",
