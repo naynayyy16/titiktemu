@@ -27,7 +27,7 @@ import com.stis.titiktemu.ui.theme.Surface
 @Composable
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToWelcome: () -> Unit
 ) {
     val context = LocalContext.current
     val viewModel: SplashViewModel = viewModel(factory = ViewModelFactory(context))
@@ -35,7 +35,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         viewModel.checkTokenAndNavigate(
             onNavigateToHome = onNavigateToHome,
-            onNavigateToLogin = onNavigateToLogin
+            onNavigateToLogin = onNavigateToWelcome
         )
     }
 

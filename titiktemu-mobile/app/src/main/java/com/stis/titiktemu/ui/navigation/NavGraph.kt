@@ -16,6 +16,7 @@ import com.stis.titiktemu.ui.screens.profile.ChangePasswordScreen
 import com.stis.titiktemu.ui.screens.profile.EditProfileScreen
 import com.stis.titiktemu.ui.screens.profile.ProfileScreen
 import com.stis.titiktemu.ui.screens.splash.SplashScreen
+import com.stis.titiktemu.ui.screens.welcome.WelcomeScreen
 
 @Composable
 fun NavGraph(
@@ -31,10 +32,22 @@ fun NavGraph(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 },
-                onNavigateToLogin = {
-                    navController.navigate(Screen.Login.route) {
+                onNavigateToWelcome = {
+                    navController.navigate(Screen.Welcome.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        // Welcome
+        composable(Screen.Welcome.route) {
+            WelcomeScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route)
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
                 }
             )
         }
