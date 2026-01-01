@@ -1,6 +1,8 @@
 package com.stis.titiktemu.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -80,9 +82,12 @@ fun CustomTextField(
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     isPassword: Boolean = false,
+    readOnly: Boolean = false,
+    onClick: (() -> Unit)? = null,
     error: String? = null
 ) {
     val showPassword = remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
 
     Column(modifier = modifier) {
         OutlinedTextField(
@@ -90,10 +95,22 @@ fun CustomTextField(
             onValueChange = onValueChange,
             label = { Text(label, style = Typography.labelMedium) },
             placeholder = { Text(placeholder, style = Typography.bodySmall) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = onClick
+                        )
+                    } else Modifier
+                ),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             singleLine = singleLine,
             maxLines = maxLines,
+            readOnly = readOnly,
+            enabled = onClick == null,
             visualTransformation = if (isPassword && !showPassword.value) {
                 PasswordVisualTransformation()
             } else {

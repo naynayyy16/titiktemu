@@ -1,5 +1,7 @@
 package com.stis.titiktemu.ui.screens.detail
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +19,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -159,8 +160,8 @@ fun DetailLaporanScreen(
                     androidx.compose.material3.Divider(modifier = Modifier.padding(vertical = 16.dp))
 
                     // Details
-                    DetailRow("📍 Lokasi", laporan.lokasi)
-                    DetailRow("📅 Tanggal", laporan.tanggalKejadian)
+                    DetailRow("Lokasi", laporan.lokasi)
+                    DetailRow("Tanggal", laporan.tanggalKejadian)
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -186,10 +187,25 @@ fun DetailLaporanScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                             ) {
-                                Button(onClick = {}) {
-                                    Icon(Icons.Default.Phone, contentDescription = null)
+                                Button(
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                                            data = Uri.parse("https://wa.me/${laporan.pelaporNoHp}")
+                                        }
+                                        context.startActivity(intent)
+                                    },
+                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                        containerColor = androidx.compose.ui.graphics.Color(0xFF25D366)
+                                    )
+                                ) {
+                                    Text("💬", style = Typography.titleMedium)
                                 }
-                                Button(onClick = {}) {
+                                Button(onClick = {
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = Uri.parse("mailto:${laporan.pelaporEmail}")
+                                    }
+                                    context.startActivity(intent)
+                                }) {
                                     Icon(Icons.Default.Email, contentDescription = null)
                                 }
                             }

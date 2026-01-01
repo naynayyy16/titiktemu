@@ -65,6 +65,7 @@ fun RegisterScreen(
     var jabatan by remember { mutableStateOf("Mahasiswa") }
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var jabatanMenuExpanded by remember { mutableStateOf(false) }
 
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
@@ -192,19 +193,33 @@ fun RegisterScreen(
 
             CustomTextField(
                 value = noHp,
-                onValueChange = { noHp = it },
+                onValueChange = { 
+                    noHp = it
+                    phoneError = when {
+                        it.isEmpty() -> null
+                        !it.startsWith("62") -> "Nomor harus dimulai dengan 62"
+                        it.length < 10 -> "Nomor terlalu pendek"
+                        else -> null
+                    }
+                },
                 label = "Nomor HP",
+                placeholder = "Contoh: 628123456789",
                 keyboardType = KeyboardType.Phone,
+                error = phoneError,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
             CustomButton(
                 text = "Daftar",
                 onClick = {
-                    viewModel.register(
-                        username, email, password, namaLengkap, jabatan,
-                        nimNip.ifEmpty { null }, noHp
-                    )
+                    if (!noHp.startsWith("62") || noHp.length < 10) {
+                        phoneError = "Nomor harus dimulai dengan 62 dan minimal 10 digit"
+                    } else {
+                        viewModel.register(
+                            username, email, password, namaLengkap, jabatan,
+                            nimNip.ifEmpty { null }, noHp
+                        )
+                    }
                 },
                 isLoading = loginState is Resource.Loading
             )

@@ -53,6 +53,7 @@ fun EditProfileScreen(onBack: () -> Unit) {
     var nimNip by remember { mutableStateOf("") }
     var noHp by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var phoneError by remember { mutableStateOf<String?>(null) }
     var jabatanMenuExpanded by remember { mutableStateOf(false) }
     
     val jabatanOptions = listOf("Mahasiswa", "Dosen", "Tendik", "Cleaning Service", "Lainnya")
@@ -157,8 +158,18 @@ fun EditProfileScreen(onBack: () -> Unit) {
 
             CustomTextField(
                 value = noHp,
-                onValueChange = { noHp = it },
+                onValueChange = { 
+                    noHp = it
+                    phoneError = when {
+                        it.isEmpty() -> null
+                        !it.startsWith("62") -> "Nomor harus dimulai dengan 62"
+                        it.length < 10 -> "Nomor terlalu pendek"
+                        else -> null
+                    }
+                },
                 label = "No HP",
+                placeholder = "Contoh: 628123456789",
+                error = phoneError,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -172,7 +183,11 @@ fun EditProfileScreen(onBack: () -> Unit) {
             CustomButton(
                 text = "Simpan",
                 onClick = {
-                    viewModel.updateProfile(namaLengkap, jabatan, nimNip.ifEmpty { null }, noHp, email)
+                    if (!noHp.startsWith("62") || noHp.length < 10) {
+                        phoneError = "Nomor harus dimulai dengan 62 dan minimal 10 digit"
+                    } else {
+                        viewModel.updateProfile(namaLengkap, jabatan, nimNip.ifEmpty { null }, noHp, email)
+                    }
                 },
                 isLoading = updateState is Resource.Loading
             )

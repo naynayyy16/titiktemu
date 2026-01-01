@@ -20,6 +20,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -33,6 +36,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -169,12 +173,51 @@ fun EditLaporanScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                CustomTextField(
-                    value = kategori,
-                    onValueChange = { kategori = it },
-                    label = "Kategori",
-                    modifier = Modifier.padding(bottom = 12.dp)
+                // Kategori Dropdown
+                Text("Kategori", style = Typography.labelMedium)
+                val kategoriOptions = listOf(
+                    "ELEKTRONIK", "ALAT_TULIS", "AKSESORIS_PRIBADI", 
+                    "ALAT_MAKAN", "DOKUMEN", "ATRIBUT_KAMPUS", "LAINNYA"
                 )
+                var kategoriExpanded by remember { mutableStateOf(false) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                ) {
+                    TextField(
+                        value = kategori,
+                        onValueChange = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        readOnly = true,
+                        trailingIcon = {
+                            IconButton(onClick = { kategoriExpanded = !kategoriExpanded }) {
+                                Icon(
+                                    imageVector = if (kategoriExpanded) 
+                                        Icons.Default.KeyboardArrowUp 
+                                    else 
+                                        Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = kategoriExpanded,
+                        onDismissRequest = { kategoriExpanded = false },
+                        modifier = Modifier.fillMaxWidth(0.85f)
+                    ) {
+                        kategoriOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    kategori = option
+                                    kategoriExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 CustomTextField(
                     value = lokasi,
@@ -239,28 +282,49 @@ fun EditLaporanScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                Text("Status", style = Typography.labelMedium)
+                // Status dropdown
+                Text("Status", style = Typography.labelMedium, modifier = Modifier.padding(bottom = 4.dp))
                 var statusExpanded by remember { mutableStateOf(false) }
-                TextField(
-                    value = status,
-                    onValueChange = {},
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    readOnly = true
-                )
-                DropdownMenu(
-                    expanded = statusExpanded,
-                    onDismissRequest = { statusExpanded = false }
+                        .padding(bottom = 24.dp)
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("AKTIF") },
-                        onClick = { status = "AKTIF"; statusExpanded = false }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("SELESAI") },
-                        onClick = { status = "SELESAI"; statusExpanded = false }
-                    )
+                    OutlinedButton(
+                        onClick = { statusExpanded = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = status,
+                            modifier = Modifier.weight(1f),
+                            style = Typography.bodyMedium
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = statusExpanded,
+                        onDismissRequest = { statusExpanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("AKTIF") },
+                            onClick = { 
+                                status = "AKTIF"
+                                statusExpanded = false 
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("SELESAI") },
+                            onClick = { 
+                                status = "SELESAI"
+                                statusExpanded = false 
+                            }
+                        )
+                    }
                 }
 
                 CustomButton(
